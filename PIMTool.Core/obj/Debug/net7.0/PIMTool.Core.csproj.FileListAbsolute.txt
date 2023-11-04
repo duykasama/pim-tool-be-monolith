@@ -1,0 +1,14 @@
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\bin\Debug\net7.0\PIMTool.Core.deps.json
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\bin\Debug\net7.0\PIMTool.Core.runtimeconfig.json
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\bin\Debug\net7.0\PIMTool.Core.dll
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\bin\Debug\net7.0\PIMTool.Core.pdb
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.csproj.AssemblyReference.cache
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.AssemblyInfoInputs.cache
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.AssemblyInfo.cs
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.csproj.CoreCompileInputs.cache
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.dll
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\refint\PIMTool.Core.dll
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.pdb
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\PIMTool.Core.genruntimeconfig.cache
+D:\.Programming\C#\Projects\pimtool-monolithic\PIMTool\PIMTool.Core\obj\Debug\net7.0\ref\PIMTool.Core.dll
