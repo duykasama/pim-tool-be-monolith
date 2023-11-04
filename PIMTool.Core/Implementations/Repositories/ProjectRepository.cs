@@ -1,4 +1,5 @@
-﻿using PIMTool.Core.Domain.Entities;
+﻿using System;
+using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Implementations.Repositories.Base;
 using PIMTool.Core.Interfaces.Repositories;
 

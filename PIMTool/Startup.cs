@@ -1,6 +1,8 @@
 ﻿using System.Reflection;
 using Autofac;
 using AutoMapper;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using PIMTool.Core.Constants;
 using PIMTool.Core.Helpers;
 using PIMTool.Core.Implementations.Repositories;
@@ -62,6 +64,19 @@ public class Startup
         builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(IGroupRepository))!)
             .AsImplementedInterfaces()
             .InstancePerLifetimeScope();
+        
+        builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(IGroupService))!)
+            .AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(IEmployeeRepository))!)
+            .AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+        
+        builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(IEmployeeService))!)
+            .AsImplementedInterfaces()
+            .InstancePerLifetimeScope();
+        
         
 
         var config = new MapperConfiguration(AppModelMapper.MappingDto);

@@ -1,4 +1,7 @@
-﻿namespace PIMTool.Core.Interfaces.Repositories;
+﻿using System;
+using System.Threading.Tasks;
+
+namespace PIMTool.Core.Interfaces.Repositories;
 
 public interface IUnitOfWork : IDisposable
 {

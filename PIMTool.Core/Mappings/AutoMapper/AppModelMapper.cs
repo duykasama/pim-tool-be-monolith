@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System.ComponentModel;
+using AutoMapper;
 using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Helpers;
 using PIMTool.Core.Models;
@@ -18,6 +19,10 @@ public static class AppModelMapper
     {
         config.CreateMap<Project, DtoProject>().ReverseMap();
         config.CreateMap<CreateProjectRequest, Project>();
+        config.CreateMap<CreateEmployeeRequest, Employee>();
+        config.CreateMap<Employee, DtoEmployee>();
+        config.CreateMap<CreateGroupRequest, Group>();
+        config.CreateMap<Group, DtoGroup>();
         config.CreateMap<UserRegisterModel, PIMUser>()
             .AfterMap((model, user) => user.Password = EncryptionHelper.Encrypt(model.Password));
     }

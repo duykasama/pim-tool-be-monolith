@@ -1,4 +1,6 @@
-﻿using PIMTool.Core.Domain.Entities;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Models;
 using PIMTool.Core.Models.Request;
 

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using PIMTool.Core.Helpers;
 
 namespace PIMTool.Core.Attributes;

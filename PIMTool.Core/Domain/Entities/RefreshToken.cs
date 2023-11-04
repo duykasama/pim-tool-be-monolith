@@ -1,4 +1,5 @@
-﻿using PIMTool.Core.Domain.Entities.Base;
+﻿using System;
+using PIMTool.Core.Domain.Entities.Base;
 
 namespace PIMTool.Core.Domain.Entities;
 

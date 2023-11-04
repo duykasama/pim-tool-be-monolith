@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using PIMTool.Core.Interfaces.Services;
 using PIMTool.Core.Interfaces.Services.Base;
 

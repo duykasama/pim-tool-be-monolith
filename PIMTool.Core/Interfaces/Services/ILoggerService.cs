@@ -1,4 +1,6 @@
-﻿namespace PIMTool.Core.Interfaces.Services;
+﻿using System;
+
+namespace PIMTool.Core.Interfaces.Services;
 
 public interface ILoggerService
 {

@@ -1,4 +1,5 @@
-﻿using PIMTool.Core.Models;
+﻿using System.Threading.Tasks;
+using PIMTool.Core.Models;
 
 namespace PIMTool.Core.Interfaces.Services;
 

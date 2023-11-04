@@ -1,4 +1,6 @@
-﻿namespace PIMTool.Core.Models.Dtos;
+﻿using System;
+
+namespace PIMTool.Core.Models.Dtos;
 
 public class DtoProject
 {

@@ -1,4 +1,8 @@
-﻿namespace PIMTool.Core.Helpers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace PIMTool.Core.Helpers;
 
 public static class ReflectionHelper
 {

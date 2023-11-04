@@ -1,4 +1,9 @@
-﻿namespace PIMTool.Middlewares;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+namespace PIMTool.Middlewares;
 
 public class GlobalExceptionMiddleware
 {

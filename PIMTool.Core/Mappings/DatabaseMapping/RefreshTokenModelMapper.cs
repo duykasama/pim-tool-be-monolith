@@ -32,6 +32,7 @@ public class RefreshTokenModelMapper : IModelMapper
                 .HasColumnType("datetime");
 
             entity.Ignore(e => e.Id);
+            entity.Ignore(e => e.IsDeleted);
 
             entity.HasOne(d => d.User).WithMany(p => p.RefreshTokens)
                 .HasForeignKey(d => d.UserId);

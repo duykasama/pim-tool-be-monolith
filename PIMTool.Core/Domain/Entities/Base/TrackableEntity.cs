@@ -1,4 +1,6 @@
-﻿namespace PIMTool.Core.Domain.Entities.Base;
+﻿using System;
+
+namespace PIMTool.Core.Domain.Entities.Base;
 
 public abstract class TrackableEntity<T> : Entity<T>
 {

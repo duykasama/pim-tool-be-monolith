@@ -1,4 +1,5 @@
-﻿using PIMTool.Core.Enums;
+﻿using System.Collections.Generic;
+using PIMTool.Core.Enums;
 
 namespace PIMTool.Core.Models;
 

@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PIMTool.Controllers.Base;
+using PIMTool.Core.Interfaces.Services;
+using PIMTool.Core.Models.Request;
 
 namespace PIMTool.Controllers;
 
@@ -8,31 +12,46 @@ namespace PIMTool.Controllers;
 [Route("[controller]")]
 public class EmployeesController : BaseController
 {
+    private readonly IEmployeeService _employeeService;
+
+    public EmployeesController(IEmployeeService employeeService)
+    {
+        _employeeService = employeeService;
+    }
+
     [Route("all")]
     [HttpGet]
     public async Task<IActionResult> GetAllEmployees()
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _employeeService.GetAllEmployeesAsync().ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
     [HttpPost]
-    public async Task<IActionResult> GetEmployees()
+    public async Task<IActionResult> GetEmployees(SearchEmployeesRequest searchEmployeesRequest)
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _employeeService.FindEmployeesAsync(searchEmployeesRequest).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
     [Route("{id:guid}")]
     [HttpPost]
     public async Task<IActionResult> GetEmployee(Guid id)
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _employeeService.FindEmployeeAsync(id).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
     [Route("create")]
     [HttpPost]
-    public async Task<IActionResult> CreateEmployee()
+    public async Task<IActionResult> CreateEmployee(CreateEmployeeRequest createEmployeeRequest)
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _employeeService.CreateEmployeeAsync(createEmployeeRequest).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
     [Route("{id:guid}")]

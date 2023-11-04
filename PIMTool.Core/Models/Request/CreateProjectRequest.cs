@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using PIMTool.Core.Attributes;
 
 namespace PIMTool.Core.Models.Request;
@@ -9,8 +10,7 @@ public class CreateProjectRequest
     [RequiredGuid]
     public Guid GroupId { get; set; }
     
-    [Required]
-    [Range(typeof(int), "0", "9999")]
+    [Range(typeof(int), "1", "9999")]
     public int ProjectNumber { get; set; }
     
     [Required]

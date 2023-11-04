@@ -1,4 +1,6 @@
-﻿namespace PIMTool.Core.Models.Request;
+﻿using System.Collections.Generic;
+
+namespace PIMTool.Core.Models.Request;
 
 public class SearchCriteria
 {
