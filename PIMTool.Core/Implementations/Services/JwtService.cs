@@ -87,7 +87,7 @@ public class JwtService : BaseService, IJwtService
         var retrievedToken = await _refreshTokenRepository.GetAsync(t => t.Token == token);
         if (retrievedToken is null)
         {
-            return BuildErrorResult("Refresh token does not exist");
+            throw new RefreshTokenDoesNotExistException();
         }
 
         if (retrievedToken.ValidUntil < DateTime.Now)

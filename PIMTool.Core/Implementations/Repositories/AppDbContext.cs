@@ -12,8 +12,7 @@ public class AppDbContext : DbContext, IAppDbContext
 {
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // var connectionString = DataAccessHelper.GetConnectionString();
-        var connectionString = "Server=localhost;User Id=sa;Password=12345;Initial Catalog=PIMTool.Scaffold;Trust Server Certificate=True;";
+        var connectionString = DataAccessHelper.GetDefaultConnection();
         optionsBuilder.UseSqlServer(connectionString,options =>
                 options.CommandTimeout(DataAccessConstants.DEAULT_COMMAND_TIMEOUT_IN_SECONDS))
             .EnableSensitiveDataLogging()

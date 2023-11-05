@@ -13,7 +13,7 @@ namespace PIMTool.Core.Implementations.Repositories.Base;
 
 public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entity<TKey>
 {
-    private readonly IAppDbContext _appDbContext;
+    protected readonly IAppDbContext _appDbContext;
 
     protected Repository(IAppDbContext appDbContext)
     {
@@ -102,7 +102,7 @@ public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entit
 
     public Task<IQueryable<T>> FindByAsync(Expression<Func<T, bool>> specification)
     {
-        return Task.FromResult(GetSet().AsNoTracking().Where(specification));
+        return Task.FromResult(GetSet().AsNoTracking().Where(specification).AsQueryable());
     }
 
     public long Count(Expression<Func<T, bool>> specification)

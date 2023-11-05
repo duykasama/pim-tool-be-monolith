@@ -22,7 +22,6 @@ namespace PIMTool
                     // builder.ConfigureLogging(configure => { configure.ClearProviders(); });
                 })
                 .Build();
-
             host.Run();
             LogManager.Shutdown();
         }

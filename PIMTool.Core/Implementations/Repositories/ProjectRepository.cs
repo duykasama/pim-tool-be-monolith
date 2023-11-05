@@ -10,4 +10,9 @@ public class ProjectRepository : Repository<Project, Guid>, IProjectRepository
     public ProjectRepository(IAppDbContext appDbContext) : base(appDbContext)
     {
     }
+
+    public void SetModified(Project project)
+    {
+        _appDbContext.SetModified(project);
+    }
 }

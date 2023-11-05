@@ -21,7 +21,9 @@ public class GroupsController : BaseController
     [HttpGet]
     public async Task<IActionResult> GetAllGroups()
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _groupService.GetAllGroupsAsync().ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
     [HttpPost]
@@ -36,7 +38,9 @@ public class GroupsController : BaseController
     [HttpPost]
     public async Task<IActionResult> GetGroup(Guid id)
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _groupService.FindGroupAsync(id).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
     [Route("create")]

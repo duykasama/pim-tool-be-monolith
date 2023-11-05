@@ -94,13 +94,13 @@ public abstract class BaseController : Controller
 
     protected async Task<IActionResult> ExecuteApiAsync(Func<Task<ApiActionResult>> apiLogicFuc)
     {
-        string methodInfo = null;
+        var methodInfo = string.Empty;
         var startTime = DateTime.UtcNow;
         try
         {
-            var correlationId = HttpContext.Response.Headers["X-Correlation-Id"];
+            // var correlationId = HttpContext.Response.Headers["X-Correlation-Id"];
             StringInterpolationHelper.AppendToStart(apiLogicFuc.Method.Name!);
-            StringInterpolationHelper.AppendWithDefaultFormat($"CorrelationId = {correlationId.ToString().ToUpper()}");
+            // StringInterpolationHelper.AppendWithDefaultFormat($"CorrelationId = {correlationId.ToString().ToUpper()}");
             methodInfo = StringInterpolationHelper.BuildAndClear();
             LogHelper.WriteInfo($"[START] [API-Method] - {methodInfo}");
 

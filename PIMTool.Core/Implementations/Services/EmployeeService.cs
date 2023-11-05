@@ -1,10 +1,8 @@
-﻿using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using PIMTool.Core.Domain.Entities;
+using PIMTool.Core.Exceptions;
 using PIMTool.Core.Helpers;
 using PIMTool.Core.Implementations.Services.Base;
 using PIMTool.Core.Interfaces.Repositories;
@@ -19,21 +17,20 @@ public class EmployeeService : BaseService, IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
     
     public EmployeeService(ILifetimeScope scope) : base(scope)
     {
         _employeeRepository = Resolve<IEmployeeRepository>();
         _unitOfWork = Resolve<IUnitOfWork>();
-    }
-
-    public ApiActionResult GetAllEmployees()
-    {
-        throw new NotImplementedException();
+        _mapper = Resolve<IMapper>();
     }
 
     public async Task<ApiActionResult> GetAllEmployeesAsync()
     {
-        throw new NotImplementedException();
+        var result = await _employeeRepository.GetAllAsync();
+        var resultDto = _mapper.Map<IEnumerable<DtoEmployee>>(await result.ToListAsync());
+        return new ApiActionResult(true) { Data = resultDto };
     }
 
     public async Task<ApiActionResult> FindEmployeesAsync(SearchEmployeesRequest req)
@@ -51,7 +48,7 @@ public class EmployeeService : BaseService, IEmployeeService
             employees = employees.AsEnumerable().Where(disjunctionWhere).AsQueryable();
         }
 
-        var orderEmployees = employees.OrderBy(p => "");
+        var orderEmployees = employees.OrderBy(p => p.CreatedAt);
         if (req.SortByInfos is not null)
         {
             orderEmployees = req.SortByInfos.Aggregate(orderEmployees, (current, sort) => sort.Ascending
@@ -59,19 +56,30 @@ public class EmployeeService : BaseService, IEmployeeService
                 : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
         }
 
-        var paginatedResult = await PaginationHelper.BuildPaginatedResult<Employee, DtoEmployee>(Resolve<IMapper>(), orderEmployees, req.PageSize, req.PageIndex);
+        var paginatedResult = await PaginationHelper.BuildPaginatedResult<Employee, DtoEmployee>(_mapper, orderEmployees, req.PageSize, req.PageIndex);
             
         return new ApiActionResult(true) { Data = paginatedResult};
     }
 
     public async Task<ApiActionResult> FindEmployeeAsync(Guid id)
     {
-        throw new NotImplementedException();
+        var employees = await _employeeRepository.FindByAsync(e => e.Id == id && !e.IsDeleted);
+        var employee = await employees
+            .Include(e => e.Groups)
+            .Include(e => e.Projects)
+            .FirstAsync();
+        if (employee is null)
+        {
+            throw new EmployeeDoesNotExistException();
+        }
+
+        var employeeDto = _mapper.Map<DtoEmployeeDetail>(employee);
+        return new ApiActionResult(true) { Data = employeeDto };
     }
 
     public async Task<ApiActionResult> CreateEmployeeAsync(CreateEmployeeRequest createEmployeeRequest)
     {
-        var employee = Resolve<IMapper>().Map<Employee>(createEmployeeRequest);
+        var employee = _mapper.Map<Employee>(createEmployeeRequest);
         employee.SetCreatedInfo(Guid.Empty);
         await _employeeRepository.AddAsync(employee);
         await _unitOfWork.CommitAsync();

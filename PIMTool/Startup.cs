@@ -3,6 +3,7 @@ using Autofac;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 using PIMTool.Core.Constants;
 using PIMTool.Core.Helpers;
 using PIMTool.Core.Implementations.Repositories;
@@ -86,10 +87,10 @@ public class Startup
     
     public void ConfigureServices(IServiceCollection services)
     {
-        // DataAccessHelper.InitConfiguration(services.BuildServiceProvider().GetService<IConfiguration>()!);
         LogHelper.InitLoggerService(new NLogService(Scope));
 
-        services.AddControllers();
+        services.AddControllers().AddNewtonsoftJson(opt => 
+            opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
         services.AddJwtAuthentication();
         services.AddAuthorization();
         services.AddAppCors();
@@ -97,6 +98,9 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
+        DataAccessHelper.InitConfiguration(app.ApplicationServices.GetRequiredService<IConfiguration>());
+        DataAccessHelper.MigrateDatabase(Assembly.GetExecutingAssembly().GetName().Name!);
+        
         app.UseRouting();
         app.UseHttpsRedirection();
         app.UseMiddleware<GlobalExceptionMiddleware>();

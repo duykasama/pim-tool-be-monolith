@@ -6,6 +6,8 @@ namespace PIMTool.Core.Interfaces.Services;
 
 public interface IGroupService : IService
 {
+    Task<ApiActionResult> GetAllGroupsAsync();
     Task<ApiActionResult> CreateGroupAsync(CreateGroupRequest createGroupRequest);
     Task<ApiActionResult> FindGroupsAsync(SearchGroupsRequest searchGroupsRequest);
+    Task<ApiActionResult> FindGroupAsync(Guid id);
 }

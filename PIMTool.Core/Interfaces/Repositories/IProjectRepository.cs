@@ -6,4 +6,5 @@ namespace PIMTool.Core.Interfaces.Repositories;
 
 public interface IProjectRepository : IRepository<Project, Guid>
 {
+    void SetModified(Project project);
 }

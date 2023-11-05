@@ -18,11 +18,14 @@ public static class AppModelMapper
     private static void MapModels(IMapperConfigurationExpression config)
     {
         config.CreateMap<Project, DtoProject>().ReverseMap();
-        config.CreateMap<CreateProjectRequest, Project>();
+        config.CreateMap<CreateProjectRequest, Project>()
+            .AfterMap((req, proj) => proj.Id = Guid.NewGuid());
         config.CreateMap<CreateEmployeeRequest, Employee>();
         config.CreateMap<Employee, DtoEmployee>();
+        config.CreateMap<Employee, DtoEmployeeDetail>();
         config.CreateMap<CreateGroupRequest, Group>();
         config.CreateMap<Group, DtoGroup>();
+        config.CreateMap<Group, DtoGroupDetail>();
         config.CreateMap<UserRegisterModel, PIMUser>()
             .AfterMap((model, user) => user.Password = EncryptionHelper.Encrypt(model.Password));
     }

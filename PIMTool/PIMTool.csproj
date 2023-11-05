@@ -22,4 +22,8 @@
       <ProjectReference Include="..\PIMTool.Core\PIMTool.Core.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <EmbeddedResource Include="Scripts\01.Init_Database.sql" />
+    </ItemGroup>
+
 </Project>
