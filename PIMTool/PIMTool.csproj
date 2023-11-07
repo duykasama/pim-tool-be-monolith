@@ -24,6 +24,8 @@
 
     <ItemGroup>
       <EmbeddedResource Include="Scripts\01.Init_Database.sql" />
+      <None Remove="Scripts\02.Update_Group.sql" />
+      <EmbeddedResource Include="Scripts\02.Update_Group.sql" />
     </ItemGroup>
 
 </Project>

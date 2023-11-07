@@ -52,18 +52,22 @@ public class GroupsController : BaseController
         ).ConfigureAwait(false);
     }
     
-    [Route("{id:guid}")]
+    [Route("update/{id:guid}")]
     [HttpPut]
-    public async Task<IActionResult> UpdateGroup(Guid id)
+    public async Task<IActionResult> UpdateGroup(UpdateGroupRequest updateGroupRequest, Guid id)
     {
-        return Ok();
-        
+        var updaterId = HttpContext.Request.Headers["UpdaterId"].ToString();
+        return await ExecuteApiAsync(
+            async () => await _groupService.UpdateGroupAsync(updateGroupRequest, id, updaterId).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
-    [Route("{id:guid}")]
+    [Route("delete/{id:guid}")]
     [HttpDelete]
     public async Task<IActionResult> DeleteGroup(Guid id)
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _groupService.DeleteProjectAsync(id).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
 }

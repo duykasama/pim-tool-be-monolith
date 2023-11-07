@@ -54,18 +54,22 @@ public class EmployeesController : BaseController
         ).ConfigureAwait(false);
     }
     
-    [Route("{id:guid}")]
+    [Route("update/{id:guid}")]
     [HttpPut]
-    public async Task<IActionResult> UpdateEmployee(Guid id)
+    public async Task<IActionResult> UpdateEmployee(UpdateEmployeeRequest request, Guid id)
     {
-        return Ok();
-        
+        var updaterId = HttpContext.Request.Headers["UpdaterId"].ToString();
+        return await ExecuteApiAsync(
+            async () => await _employeeService.UpdateEmployeeAsync(request, id, updaterId).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
     
-    [Route("{id:guid}")]
+    [Route("delete/{id:guid}")]
     [HttpDelete]
     public async Task<IActionResult> DeleteEmployee(Guid id)
     {
-        return Ok();
+        return await ExecuteApiAsync(
+            async () => await _employeeService.DeleteEmployeeAsync(id).ConfigureAwait(false)
+        ).ConfigureAwait(false);
     }
 }

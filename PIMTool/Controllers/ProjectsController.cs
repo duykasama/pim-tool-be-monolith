@@ -34,9 +34,18 @@ public class ProjectsController : BaseController
             async () => await _projectService.FindProjectsAsync(searchProjectsRequest).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
-
+    
+    [Route("{id:int}")]
     [HttpPost]
+    public async Task<IActionResult> GetProject(int id)
+    {
+        return await ExecuteApiAsync(
+            async () => await _projectService.FindProjectByProjectNumberAsync(id).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+
     [Route("create")]
+    [HttpPost]
     public async Task<IActionResult> CreateProject(CreateProjectRequest createProjectRequest)
     {
         return await ExecuteApiAsync(
@@ -44,12 +53,40 @@ public class ProjectsController : BaseController
         ).ConfigureAwait(false);
     }
 
-    [HttpPost]
     [Route("validate/{projectNumber:int}")]
+    [HttpPost]
     public async Task<IActionResult> ValidateProjectNumber(int projectNumber)
     {
         return await ExecuteApiAsync(
             async () => await _projectService.CheckIfProjectNumberExistsAsync(projectNumber).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+
+    [Route("update/{id:guid}")]
+    [HttpPut]
+    public async Task<IActionResult> UpdateProject(UpdateProjectRequest updateProjectRequest, Guid id)
+    {
+        var updaterId = HttpContext.Request.Headers["UpdaterId"].ToString();
+        return await ExecuteApiAsync(
+            async () => await _projectService.UpdateProjectAsync(updateProjectRequest, id, updaterId).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+    
+    [Route("delete/{id:guid}")]
+    [HttpDelete]
+    public async Task<IActionResult> DeleteProject(Guid id)
+    {
+        return await ExecuteApiAsync(
+            async () => await _projectService.DeleteProjectAsync(id).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+
+    [Route("delete")]
+    [HttpPost]
+    public async Task<IActionResult> DeleteMultipleProjects(DeleteMultipleProjectsRequest request)
+    {
+        return await ExecuteApiAsync(
+            async () => await _projectService.DeleteMultipleProjectsAsync(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 }
