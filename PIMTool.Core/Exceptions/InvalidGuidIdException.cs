@@ -1,6 +1,8 @@
-﻿namespace PIMTool.Core.Exceptions;
+﻿using PIMTool.Core.Exceptions.Base;
 
-public class InvalidGuidIdException
+namespace PIMTool.Core.Exceptions;
+
+public class InvalidGuidIdException : ArgumentException, IAppException
 {
-    
+    public override string Message => "Invalid guid id";
 }

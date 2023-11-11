@@ -7,4 +7,7 @@ public class CreateGroupRequest
 {
     [RequiredGuid] 
     public Guid LeaderId { get; set; }
+
+    [Required]
+    public string Name { get; set; }
 }

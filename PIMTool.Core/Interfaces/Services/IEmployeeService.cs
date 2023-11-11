@@ -12,4 +12,6 @@ public interface IEmployeeService : IService
     Task<ApiActionResult> FindEmployeesAsync(SearchEmployeesRequest searchEmployeesRequest);
     Task<ApiActionResult> FindEmployeeAsync(Guid id);
     Task<ApiActionResult> CreateEmployeeAsync(CreateEmployeeRequest createEmployeeRequest);
+    Task<ApiActionResult> UpdateEmployeeAsync(UpdateEmployeeRequest updateEmployeeRequest, Guid id, string updaterId);
+    Task<ApiActionResult> DeleteEmployeeAsync(Guid id);
 }

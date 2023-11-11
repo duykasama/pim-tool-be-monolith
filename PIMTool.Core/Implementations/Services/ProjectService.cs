@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PIMTool.Core.Constants;
 using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Exceptions;
 using PIMTool.Core.Helpers;
@@ -23,6 +19,7 @@ public class ProjectService : BaseService, IProjectService
 {
     private readonly IProjectRepository _projectRepository;
     private readonly IGroupRepository _groupRepository;
+    private readonly IPIMUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     
@@ -30,6 +27,7 @@ public class ProjectService : BaseService, IProjectService
     {
         _projectRepository = Resolve<IProjectRepository>();
         _groupRepository = Resolve<IGroupRepository>();
+        _userRepository = Resolve<IPIMUserRepository>();
         _unitOfWork = Resolve<IUnitOfWork>();
         _mapper = Resolve<IMapper>();
     }
@@ -44,7 +42,7 @@ public class ProjectService : BaseService, IProjectService
     public async Task<ApiActionResult> FindProjectsAsync(SearchProjectsRequest req)
     {
         var projects = (await _projectRepository
-            .FindByAsync(e => !e.IsDeleted));
+            .FindByAsync(e => !e.IsDeleted).ConfigureAwait(false));
 
         if (req.SearchCriteria is not null)
         {
@@ -57,7 +55,7 @@ public class ProjectService : BaseService, IProjectService
             projects = projects.AsEnumerable().Where(disjunctionWhere).AsQueryable();
         }
 
-        var orderedProjects = projects.OrderBy(p => p.CreatedAt);
+        var orderedProjects = projects.OrderBy(p => "");
         if (req.SortByInfos is not null)
         {
             orderedProjects = req.SortByInfos.Aggregate(orderedProjects, (current, sort) => sort.Ascending
@@ -65,8 +63,7 @@ public class ProjectService : BaseService, IProjectService
                 : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
         }
 
-        var paginatedResult =
-            await PaginationHelper.BuildPaginatedResult<Project, DtoProject>(_mapper, orderedProjects,
+        var paginatedResult = PaginationHelper.BuildPaginatedResult<Project, DtoProject>(_mapper, orderedProjects,
                 req.PageSize, req.PageIndex);
         
         return new ApiActionResult(true) { Data = paginatedResult};
@@ -101,5 +98,94 @@ public class ProjectService : BaseService, IProjectService
             Data = isValid
         };
         return result;
+    }
+
+    public async Task<ApiActionResult> UpdateProjectAsync(UpdateProjectRequest request, Guid id, string updaterId)
+    {
+        var parseSuccess = Guid.TryParse(updaterId, out var updaterGuidId);
+        if (!parseSuccess)
+        {
+            throw new InvalidGuidIdException();
+        }
+        
+        if (!await _userRepository.ExistsAsync(u => !u.IsDeleted && u.Id == updaterGuidId))
+        {
+            throw new UserDoesNotExistException();
+        }
+
+        var project = await (await _projectRepository
+                .FindByAsync(p => !p.IsDeleted && p.Id == id))
+            .FirstOrDefaultAsync();
+        if (project is null)
+        {
+            throw new ProjectDoesNotExistException();
+        }
+
+        if (project.Version != request.Version)
+        {
+            throw new VersionMismatchedException();
+        }
+        
+        _mapper.Map(request, project);
+        project.SetUpdatedInfo(updaterGuidId);
+        await _projectRepository.UpdateAsync(project);
+        await _unitOfWork.CommitAsync();
+        
+        return new ApiActionResult(true);
+    }
+
+    public async Task<ApiActionResult> DeleteProjectAsync(Guid id)
+    {
+        var project = await (await _projectRepository
+                .FindByAsync(p => !p.IsDeleted && p.Id == id)
+            ).FirstOrDefaultAsync();
+        if (project is null)
+        {
+            throw new ProjectDoesNotExistException();
+        }
+
+        if (project.Status != ProjectStatus.NEW)
+        {
+            throw new IndelibleProjectException();
+        }
+
+        await _projectRepository.DeleteAsync(id);
+        await _unitOfWork.CommitAsync();
+        return new ApiActionResult(true);
+    }
+
+    public async Task<ApiActionResult> FindProjectByProjectNumberAsync(int projectNumber)
+    {
+        var project = await (await _projectRepository.FindByAsync(p => !p.IsDeleted && p.ProjectNumber == projectNumber))
+            .FirstOrDefaultAsync();
+        if (project is null)
+        {
+            throw new ProjectDoesNotExistException();
+        }
+
+        return new ApiActionResult(true) { Data = _mapper.Map<DtoProject>(project) };
+    }
+
+    public async Task<ApiActionResult> DeleteMultipleProjectsAsync(DeleteMultipleProjectsRequest request)
+    {
+        foreach (var projectId in request.ProjectIds)
+        {
+            var project = await (await _projectRepository
+                    .FindByAsync(p => !p.IsDeleted && p.Id == projectId)
+                ).FirstOrDefaultAsync();
+            if (project is null)
+            {
+                throw new ProjectDoesNotExistException();
+            }
+
+            if (project.Status != ProjectStatus.NEW)
+            {
+                throw new IndelibleProjectException();
+            }
+
+            await _projectRepository.DeleteAsync(projectId);
+        }
+        await _unitOfWork.CommitAsync();
+        return new ApiActionResult(true);
     }
 }

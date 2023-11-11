@@ -52,7 +52,8 @@ public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entit
 
     public Task UpdateAsync(T entity)
     {
-        throw new NotImplementedException();
+        _appDbContext.SetModified(entity);
+        return Task.CompletedTask;
     }
 
     public void UpdateMany(T entities)

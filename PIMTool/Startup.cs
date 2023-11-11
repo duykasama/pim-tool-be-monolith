@@ -18,7 +18,14 @@ namespace PIMTool;
 
 public class Startup
 {
+    private IConfiguration Configuration { get; set; }
     public ILifetimeScope Scope { get; set; }
+
+    public Startup(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
+    
     public void ConfigureContainer(ContainerBuilder builder)
     {
         builder.RegisterAssemblyTypes(Assembly.GetAssembly(typeof(NLogService))!)
@@ -98,7 +105,7 @@ public class Startup
 
     public void Configure(IApplicationBuilder app)
     {
-        DataAccessHelper.InitConfiguration(app.ApplicationServices.GetRequiredService<IConfiguration>());
+        DataAccessHelper.InitConfiguration(Configuration);
         DataAccessHelper.MigrateDatabase(Assembly.GetExecutingAssembly().GetName().Name!);
         
         app.UseRouting();

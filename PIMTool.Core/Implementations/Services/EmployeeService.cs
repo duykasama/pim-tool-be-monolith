@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System.Collections;
+using Autofac;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using PIMTool.Core.Domain.Entities;
@@ -16,12 +17,14 @@ namespace PIMTool.Core.Implementations.Services;
 public class EmployeeService : BaseService, IEmployeeService
 {
     private readonly IEmployeeRepository _employeeRepository;
+    private readonly IPIMUserRepository _userRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     
     public EmployeeService(ILifetimeScope scope) : base(scope)
     {
         _employeeRepository = Resolve<IEmployeeRepository>();
+        _userRepository = Resolve<IPIMUserRepository>();
         _unitOfWork = Resolve<IUnitOfWork>();
         _mapper = Resolve<IMapper>();
     }
@@ -56,7 +59,7 @@ public class EmployeeService : BaseService, IEmployeeService
                 : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
         }
 
-        var paginatedResult = await PaginationHelper.BuildPaginatedResult<Employee, DtoEmployee>(_mapper, orderEmployees, req.PageSize, req.PageIndex);
+        var paginatedResult = PaginationHelper.BuildPaginatedResult<Employee, DtoEmployee>(_mapper, orderEmployees, req.PageSize, req.PageIndex);
             
         return new ApiActionResult(true) { Data = paginatedResult};
     }
@@ -67,7 +70,7 @@ public class EmployeeService : BaseService, IEmployeeService
         var employee = await employees
             .Include(e => e.Groups)
             .Include(e => e.Projects)
-            .FirstAsync();
+            .FirstOrDefaultAsync();
         if (employee is null)
         {
             throw new EmployeeDoesNotExistException();
@@ -82,6 +85,46 @@ public class EmployeeService : BaseService, IEmployeeService
         var employee = _mapper.Map<Employee>(createEmployeeRequest);
         employee.SetCreatedInfo(Guid.Empty);
         await _employeeRepository.AddAsync(employee);
+        await _unitOfWork.CommitAsync();
+        return new ApiActionResult(true);
+    }
+
+    public async Task<ApiActionResult> UpdateEmployeeAsync(UpdateEmployeeRequest request, Guid id, string updaterId)
+    {
+        var parseSuccess = Guid.TryParse(updaterId, out var updaterGuidId);
+        if (!parseSuccess)
+        {
+            throw new InvalidGuidIdException();
+        }
+        if (!await _userRepository.ExistsAsync(u => !u.IsDeleted && u.Id == updaterGuidId))
+        {
+            throw new UserDoesNotExistException();
+        }
+
+        var employee = await (await _employeeRepository
+                .FindByAsync(e => !e.IsDeleted && e.Id == id))
+            .FirstOrDefaultAsync();
+        if (employee is null)
+        {
+            throw new EmployeeDoesNotExistException();
+        }
+        _mapper.Map(request, employee);
+        employee.SetUpdatedInfo(updaterGuidId);
+
+        await _employeeRepository.UpdateAsync(employee);
+        await _unitOfWork.CommitAsync();
+        
+        return new ApiActionResult(true);
+    }
+
+    public async Task<ApiActionResult> DeleteEmployeeAsync(Guid id)
+    {
+        if (!await _employeeRepository.ExistsAsync(e => !e.IsDeleted && e.Id == id))
+        {
+            throw new EmployeeDoesNotExistException();
+        }
+
+        await _employeeRepository.DeleteAsync(id);
         await _unitOfWork.CommitAsync();
         return new ApiActionResult(true);
     }

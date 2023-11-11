@@ -10,7 +10,7 @@ public abstract class AuditableEntity<TKey, TUserKey> : CreatableEntity<TKey, TU
     public virtual void SetUpdatedInfo(TUserKey updatedBy)
     {
         UpdatedBy = updatedBy;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = DateTime.Now;
     }
 
     public override void SetCreatedInfo(TUserKey createdBy)

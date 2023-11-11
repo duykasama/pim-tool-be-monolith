@@ -1,6 +1,8 @@
-﻿namespace PIMTool.Core.Exceptions;
+﻿using PIMTool.Core.Exceptions.Base;
 
-public class ProjectDoesNotExistException
+namespace PIMTool.Core.Exceptions;
+
+public class ProjectDoesNotExistException : ArgumentNullException, IAppException
 {
-    
+    public override string Message => "Project does not exist";
 }

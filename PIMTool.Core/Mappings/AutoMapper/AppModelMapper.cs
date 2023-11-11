@@ -20,10 +20,15 @@ public static class AppModelMapper
         config.CreateMap<Project, DtoProject>().ReverseMap();
         config.CreateMap<CreateProjectRequest, Project>()
             .AfterMap((req, proj) => proj.Id = Guid.NewGuid());
-        config.CreateMap<CreateEmployeeRequest, Employee>();
+        config.CreateMap<UpdateProjectRequest, Project>();
+        
         config.CreateMap<Employee, DtoEmployee>();
         config.CreateMap<Employee, DtoEmployeeDetail>();
+        config.CreateMap<CreateEmployeeRequest, Employee>();
+        config.CreateMap<UpdateEmployeeRequest, Employee>();
+        
         config.CreateMap<CreateGroupRequest, Group>();
+        config.CreateMap<UpdateGroupRequest, Group>();
         config.CreateMap<Group, DtoGroup>();
         config.CreateMap<Group, DtoGroupDetail>();
         config.CreateMap<UserRegisterModel, PIMUser>()

@@ -1,6 +1,9 @@
-﻿namespace PIMTool.Core.Exceptions;
+﻿using System.Data;
+using PIMTool.Core.Exceptions.Base;
 
-public class VersionMismatchedException
+namespace PIMTool.Core.Exceptions;
+
+public class VersionMismatchedException : VersionNotFoundException, IAppException
 {
-    
+    public override string Message => "Version is not compatible";
 }
