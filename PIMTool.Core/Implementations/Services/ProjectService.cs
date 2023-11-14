@@ -42,7 +42,10 @@ public class ProjectService : BaseService, IProjectService
     public async Task<ApiActionResult> FindProjectsAsync(SearchProjectsRequest req)
     {
         var projects = (await _projectRepository
-            .FindByAsync(e => !e.IsDeleted).ConfigureAwait(false));
+            .FindByAsync(e => !e.IsDeleted).ConfigureAwait(false))
+            .Include(p => p.Group)
+            .ThenInclude(g => g.Leader)
+            .AsQueryable();
 
         if (req.SearchCriteria is not null)
         {
@@ -53,6 +56,30 @@ public class ProjectService : BaseService, IProjectService
             var disjunctionWhere =
                 ExpressionHelper.CombineAndExpressions<Project>(req.SearchCriteria.DisjunctionSearchInfos, p => true);
             projects = projects.AsEnumerable().Where(disjunctionWhere).AsQueryable();
+        }
+
+        if (req.AdvancedFilter is not null)
+        {
+            projects = projects.Where(p =>
+                p.Group.Leader.FirstName.Contains(req.AdvancedFilter.LeaderName, StringComparison.OrdinalIgnoreCase) ||
+                p.Group.Leader.LastName.Contains(req.AdvancedFilter.LeaderName));
+            if (req.AdvancedFilter.StartDateRange?.From != null)
+            {
+                projects = projects.Where(p => p.StartDate >= req.AdvancedFilter.StartDateRange.From);
+            }
+            if (req.AdvancedFilter.StartDateRange?.To != null)
+            {
+                projects = projects.Where(p => p.StartDate <= req.AdvancedFilter.StartDateRange.To);
+            }
+            
+            if (req.AdvancedFilter.EndDateRange?.From != null)
+            {
+                projects = projects.Where(p => p.EndDate != null && p.EndDate >= req.AdvancedFilter.EndDateRange.From);
+            }
+            if (req.AdvancedFilter.EndDateRange?.To != null)
+            {
+                projects = projects.Where(p => p.EndDate != null && p.EndDate <= req.AdvancedFilter.EndDateRange.To);
+            }
         }
 
         var orderedProjects = projects.OrderBy(p => "");

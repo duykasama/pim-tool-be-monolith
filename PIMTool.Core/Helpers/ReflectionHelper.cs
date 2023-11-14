@@ -17,6 +17,11 @@ public static class ReflectionHelper
 
     public static object GetPropertyValueByName<T>(T obj, string propertyName)
     {
+        if (obj is null || obj.Equals(default) || propertyName.IsNullOrEmpty())
+        {
+            return "";
+        }
+        
         var types = (from asm in AppDomain.CurrentDomain.GetAssemblies()
             from type in asm.GetTypes()
             where type.FullName == typeof(T).FullName

@@ -399,3 +399,4 @@ FodyWeavers.xsd
 .idea
 .env
 .deployment
+**/appsettings.Production.json
