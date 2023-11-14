@@ -3,6 +3,7 @@ using Autofac;
 using AutoMapper;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Newtonsoft.Json;
 using PIMTool.Core.Constants;
 using PIMTool.Core.Helpers;
@@ -96,6 +97,37 @@ public class Startup
     {
         LogHelper.InitLoggerService(new NLogService(Scope));
 
+        services.AddSwaggerGen(options =>
+        {
+            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
+            {
+                Scheme = "Bearer",
+                Type = SecuritySchemeType.ApiKey, 
+                In = ParameterLocation.Header,
+                Name = "Authorization"
+            });
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        },
+                        Scheme = "oauth2",
+                        Name = "Bearer",
+                        In = ParameterLocation.Header
+                    },
+                    new List<string>()
+                }
+            });
+            // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            // options.IncludeXmlComments(xmlPath);
+        });
+
         services.AddControllers().AddNewtonsoftJson(opt => 
             opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
         services.AddJwtAuthentication();
@@ -107,7 +139,13 @@ public class Startup
     {
         DataAccessHelper.InitConfiguration(Configuration);
         DataAccessHelper.MigrateDatabase(Assembly.GetExecutingAssembly().GetName().Name!);
-        
+
+        app.UseSwagger();
+        app.UseSwaggerUI(options =>
+        {
+            options.DocumentTitle = "This is PIMTool";
+            
+        });
         app.UseRouting();
         app.UseHttpsRedirection();
         app.UseMiddleware<GlobalExceptionMiddleware>();

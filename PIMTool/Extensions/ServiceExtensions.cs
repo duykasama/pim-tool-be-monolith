@@ -41,7 +41,7 @@ public static class ServiceExtensions
             {
                 var config = services.BuildServiceProvider().GetService<IConfiguration>();
                 var allowedOrigins = config?.GetSection("AllowedOrigins").Value ?? "*"; 
-                builder.WithOrigins(allowedOrigins)
+                builder.WithOrigins(allowedOrigins.Split(","))
                     .AllowAnyMethod()
                     .AllowAnyHeader();
                 if (allowedOrigins != "*")
