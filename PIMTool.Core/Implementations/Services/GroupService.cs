@@ -54,7 +54,7 @@ public class GroupService : BaseService, IGroupService
         {
             var conjunctionWhere =
                 ExpressionHelper.CombineOrExpressions<Group>(req.SearchCriteria.ConjunctionSearchInfos, p => !p.IsDeleted);
-            groups = groups.AsEnumerable().Where(conjunctionWhere).AsQueryable();
+            groups = groups.AsEnumerable().Where(conjunctionWhere.Compile()).AsQueryable();
 
             var disjunctionWhere =
                 ExpressionHelper.CombineAndExpressions<Group>(req.SearchCriteria.DisjunctionSearchInfos, p => true);

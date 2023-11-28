@@ -1,25 +1,41 @@
+using Hangfire;
+using PIMTool.Core.Models.Request;
+using PIMTool.CronJob;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddHangfire(config => 
+    config.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangFireConnection")));
+builder.Services.AddHangfireServer();
+
+builder.Services.AddScoped<TestService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapGet("/api/add-job", () =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    RecurringJob.AddOrUpdate("EasyJob", () => Console.WriteLine("Hello, World!"), Cron.Minutely());
+    RecurringJob.RemoveIfExists("EasyJob");
+    
+    return Results.Ok("Job added");
+});
+
+
+
+app.UseStaticFiles();
+app.UseHangfireDashboard("");
+using (var scope = app.Services.CreateScope())
+{
+    var test = scope.ServiceProvider.GetService<TestService>();
+    var request = new CreateProjectRequest()
+    {
+
+    };
+    RecurringJob.AddOrUpdate("Something", () => test!.something(), Cron.Daily());
 }
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
-app.MapControllers();
-
 app.Run();
+

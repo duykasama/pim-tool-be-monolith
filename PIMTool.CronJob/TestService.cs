@@ -2,5 +2,8 @@
 
 public class TestService
 {
-    
+    public void something()
+    {
+        Console.WriteLine("something works");
+    }
 }

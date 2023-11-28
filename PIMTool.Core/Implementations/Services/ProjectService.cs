@@ -1,5 +1,7 @@
-﻿using Autofac;
+﻿using System.Linq.Expressions;
+using Autofac;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PIMTool.Core.Constants;
@@ -20,6 +22,7 @@ public class ProjectService : BaseService, IProjectService
     private readonly IProjectRepository _projectRepository;
     private readonly IGroupRepository _groupRepository;
     private readonly IPIMUserRepository _userRepository;
+    private readonly IEmployeeRepository _employeeRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     
@@ -28,6 +31,7 @@ public class ProjectService : BaseService, IProjectService
         _projectRepository = Resolve<IProjectRepository>();
         _groupRepository = Resolve<IGroupRepository>();
         _userRepository = Resolve<IPIMUserRepository>();
+        _employeeRepository = Resolve<IEmployeeRepository>();
         _unitOfWork = Resolve<IUnitOfWork>();
         _mapper = Resolve<IMapper>();
     }
@@ -41,28 +45,54 @@ public class ProjectService : BaseService, IProjectService
 
     public async Task<ApiActionResult> FindProjectsAsync(SearchProjectsRequest req)
     {
-        var projects = (await _projectRepository
-            .FindByAsync(e => !e.IsDeleted).ConfigureAwait(false))
-            .Include(p => p.Group)
-            .ThenInclude(g => g.Leader)
-            .AsQueryable();
+        var projects = await _projectRepository
+            .FindByAsync(e => !e.IsDeleted).ConfigureAwait(false);
 
         if (req.SearchCriteria is not null)
         {
-            var conjunctionWhere =
-                ExpressionHelper.CombineOrExpressions<Project>(req.SearchCriteria.ConjunctionSearchInfos, p => !p.IsDeleted);
-            projects = projects.AsEnumerable().Where(conjunctionWhere).AsQueryable();
+            Expression<Func<Project, bool>> conjunctionExpr = project => false;
 
-            var disjunctionWhere =
-                ExpressionHelper.CombineAndExpressions<Project>(req.SearchCriteria.DisjunctionSearchInfos, p => true);
-            projects = projects.AsEnumerable().Where(disjunctionWhere).AsQueryable();
+            foreach (var searchInfo in req.SearchCriteria.ConjunctionSearchInfos)
+            {
+                var valueStr = searchInfo.Value.ToString()?.Trim();
+                conjunctionExpr = searchInfo.FieldName switch
+                {
+                    "projectNumber" => ExpressionHelper.CombineOrExpressions(conjunctionExpr,
+                        (Expression<Func<Project, bool>>)(project =>
+                            EF.Functions.Like(project.ProjectNumber.ToString(), $"%{valueStr}%"))),
+                    "name" => ExpressionHelper.CombineOrExpressions(conjunctionExpr,
+                        (Expression<Func<Project, bool>>)(project => 
+                            EF.Functions.Like(project.Name, $"%{valueStr}%"))),
+                    "customer" => ExpressionHelper.CombineOrExpressions(conjunctionExpr,
+                        (Expression<Func<Project, bool>>)(project =>
+                            EF.Functions.Like(project.Customer, $"%{valueStr}%"))),
+                    _ => conjunctionExpr
+                };
+            }
+            
+            projects = req.SearchCriteria.ConjunctionSearchInfos.IsNullOrEmpty() 
+                ? projects 
+                : projects.Where(conjunctionExpr);
+
+            foreach (var searchInfo in req.SearchCriteria.DisjunctionSearchInfos)
+            {
+                var valueStr = searchInfo.Value.ToString()!.Trim();
+                projects = searchInfo.FieldName switch
+                {
+                    "status" => projects.Where(p => EF.Functions.Like(p.Status, $"%{valueStr}%")),
+                    _ => projects
+                };
+            }
         }
 
         if (req.AdvancedFilter is not null)
         {
-            projects = projects.Where(p =>
-                p.Group.Leader.FirstName.Contains(req.AdvancedFilter.LeaderName, StringComparison.OrdinalIgnoreCase) ||
-                p.Group.Leader.LastName.Contains(req.AdvancedFilter.LeaderName));
+            projects = projects
+                .Include(p => p.Group.Leader)
+                .Where(p => 
+                    EF.Functions.Like(p.Group.Leader.FirstName, $"%{req.AdvancedFilter.LeaderName}%") ||
+                    EF.Functions.Like(p.Group.Leader.LastName, $"%{req.AdvancedFilter.LeaderName}%"));
+            
             if (req.AdvancedFilter.StartDateRange?.From != null)
             {
                 projects = projects.Where(p => p.StartDate >= req.AdvancedFilter.StartDateRange.From);
@@ -85,20 +115,39 @@ public class ProjectService : BaseService, IProjectService
         var orderedProjects = projects.OrderBy(p => "");
         if (req.SortByInfos is not null)
         {
-            orderedProjects = req.SortByInfos.Aggregate(orderedProjects, (current, sort) => sort.Ascending
-                ? current.ThenBy(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName))
-                : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
+            foreach (var sortInfo in req.SortByInfos)
+            {
+                orderedProjects = sortInfo.FieldName switch
+                {
+                    "projectNumber" => sortInfo.Ascending
+                        ? orderedProjects.ThenBy(p => p.ProjectNumber)
+                        : orderedProjects.ThenByDescending(p => p.ProjectNumber),
+                    "name" => sortInfo.Ascending
+                        ? orderedProjects.ThenBy(p => p.Name)
+                        : orderedProjects.ThenByDescending(p => p.Name),
+                    "status" => sortInfo.Ascending
+                        ? orderedProjects.ThenBy(p => p.Status)
+                        : orderedProjects.ThenByDescending(p => p.Status),
+                    "customer" => sortInfo.Ascending
+                        ? orderedProjects.ThenBy(p => p.Customer)
+                        : orderedProjects.ThenByDescending(p => p.Customer),
+                    "startDate" => sortInfo.Ascending
+                        ? orderedProjects.ThenBy(p => p.StartDate)
+                        : orderedProjects.ThenByDescending(p => p.StartDate),
+                    _ => orderedProjects
+                };
+            }
         }
 
-        var paginatedResult = PaginationHelper.BuildPaginatedResult<Project, DtoProject>(_mapper, orderedProjects,
-                req.PageSize, req.PageIndex);
+        var paginatedResult = await PaginationHelper.BuildPaginatedResult(orderedProjects.ProjectTo<DtoProject>(_mapper.ConfigurationProvider),
+                req.PageSize, req.PageIndex).ConfigureAwait(false);
         
-        return new ApiActionResult(true) { Data = paginatedResult};
+        return new ApiActionResult(true) { Data = paginatedResult };
     }
 
     public async Task<ApiActionResult> CreateProjectAsync(CreateProjectRequest createProjectRequest)
     {
-        if (await _projectRepository.ExistsAsync(p => p.ProjectNumber == createProjectRequest.ProjectNumber).ConfigureAwait(false))
+        if (await _projectRepository.ExistsAsync(p => !p.IsDeleted && p.ProjectNumber == createProjectRequest.ProjectNumber).ConfigureAwait(false))
         {
             throw new ProjectNumberAlreadyExistsException();
         }
@@ -107,8 +156,28 @@ public class ProjectService : BaseService, IProjectService
         {
             throw new GroupDoesNotExistException();
         }
+
+        var existingProject = await _projectRepository
+            .GetAsync(p => p.ProjectNumber == createProjectRequest.ProjectNumber && p.IsDeleted).ConfigureAwait(false);
+        if (existingProject is not null)
+        {
+            await _projectRepository.DeleteAsync(existingProject.Id);
+        }
+        
         var newProject = _mapper.Map<Project>(createProjectRequest);
         newProject.SetCreatedInfo(Guid.Empty);
+        
+        foreach (var memberId in createProjectRequest.MemberIds)
+        {
+            var member = await _employeeRepository.GetAsync(e => !e.IsDeleted && e.Id == memberId);
+            if (member is null)
+            {
+                throw new EmployeeDoesNotExistException();
+            }
+            
+            _employeeRepository.SetModified(member);
+            newProject.Employees.Add(member);
+        }
         
         await _projectRepository.AddAsync(newProject).ConfigureAwait(false);
         await _unitOfWork.CommitAsync().ConfigureAwait(false);
@@ -142,23 +211,40 @@ public class ProjectService : BaseService, IProjectService
 
         var project = await (await _projectRepository
                 .FindByAsync(p => !p.IsDeleted && p.Id == id))
+            .Include(p => p.Employees)
             .FirstOrDefaultAsync();
+
+        // var project = await _projectRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
         if (project is null)
         {
             throw new ProjectDoesNotExistException();
         }
 
-        if (project.Version != request.Version)
+        var currentVersion = project.Version;
+        _mapper.Map(request, project);
+        project.Employees.Clear();
+        
+        foreach (var memberId in request.MemberIds)
+        {
+            var member = await _employeeRepository.GetAsync(e => !e.IsDeleted && e.Id == memberId);
+            if (member is null)
+            {
+                throw new EmployeeDoesNotExistException();
+            }
+        
+            _employeeRepository.SetModified(member);
+            project.Employees.Add(member);
+        }
+        
+        if (project.Version != currentVersion)
         {
             throw new VersionMismatchedException();
         }
         
-        _mapper.Map(request, project);
         project.SetUpdatedInfo(updaterGuidId);
         await _projectRepository.UpdateAsync(project);
         await _unitOfWork.CommitAsync();
-        
-        return new ApiActionResult(true);
+        return new ApiActionResult(true) {Detail = "Project updated successfully"};
     }
 
     public async Task<ApiActionResult> DeleteProjectAsync(Guid id)
@@ -176,7 +262,7 @@ public class ProjectService : BaseService, IProjectService
             throw new IndelibleProjectException();
         }
 
-        await _projectRepository.DeleteAsync(id);
+        await _projectRepository.SoftDeleteAsync(id);
         await _unitOfWork.CommitAsync();
         return new ApiActionResult(true);
     }
@@ -184,13 +270,14 @@ public class ProjectService : BaseService, IProjectService
     public async Task<ApiActionResult> FindProjectByProjectNumberAsync(int projectNumber)
     {
         var project = await (await _projectRepository.FindByAsync(p => !p.IsDeleted && p.ProjectNumber == projectNumber))
+            .Include(p => p.Employees)
             .FirstOrDefaultAsync();
         if (project is null)
         {
             throw new ProjectDoesNotExistException();
         }
 
-        return new ApiActionResult(true) { Data = _mapper.Map<DtoProject>(project) };
+        return new ApiActionResult(true) { Data = _mapper.Map<DtoProjectDetail>(project) };
     }
 
     public async Task<ApiActionResult> DeleteMultipleProjectsAsync(DeleteMultipleProjectsRequest request)

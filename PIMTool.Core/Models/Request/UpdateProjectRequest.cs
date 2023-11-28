@@ -20,8 +20,7 @@ public class UpdateProjectRequest
     [MaxLength(3)]
     public string Status { get; set; }
     
-    // [NotRequired]
-    // public string Members { get; set; }
+    public IList<Guid> MemberIds { get; set; } = new List<Guid>();
     
     [RequiredDate]
     [DateIsBefore(nameof(EndDate), "End Date must be after Start Date")]

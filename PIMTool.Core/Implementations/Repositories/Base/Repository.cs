@@ -47,7 +47,7 @@ public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entit
 
     public void Update(T entity)
     {
-        throw new NotImplementedException();
+        _appDbContext.Update(entity);
     }
 
     public Task UpdateAsync(T entity)
@@ -93,7 +93,7 @@ public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entit
 
     public async Task<T?> GetAsync(Expression<Func<T, bool>> specification)
     {
-        return await GetSet().AsNoTracking().FirstOrDefaultAsync(specification);
+        return await GetSet().FirstOrDefaultAsync(specification);
     }
 
     public IQueryable<T> FindBy(Expression<Func<T, bool>> specification)
@@ -103,7 +103,7 @@ public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entit
 
     public Task<IQueryable<T>> FindByAsync(Expression<Func<T, bool>> specification)
     {
-        return Task.FromResult(GetSet().AsNoTracking().Where(specification).AsQueryable());
+        return Task.FromResult(GetSet().Where(specification));
     }
 
     public long Count(Expression<Func<T, bool>> specification)
@@ -139,13 +139,13 @@ public abstract class Repository<T, TKey> : IRepository<T, TKey> where T : Entit
     public void Delete(object id)
     {
         var entity = GetSet().First(e => Equals(e.Id, (TKey)id));
-        entity.IsDeleted = true;
+        _appDbContext.SetDeleted(entity);
     }
 
     public async Task DeleteAsync(object id)
     {
         var entity = await GetSet().FirstAsync(e => Equals(e.Id, (TKey)id));
-        entity.IsDeleted = true;
+        _appDbContext.SetDeleted(entity);
     }
 
     public void DeleteMany(Expression<Func<T, bool>> specification)

@@ -12,7 +12,7 @@ public class EmployeeModelMapper : IModelMapper
         {
             entity.ToTable(nameof(Employee));
             
-            entity.HasKey(e => e.Id);
+            entity.HasKey(e => e.Id).HasName("PK__Employee__3214EC0788608187");
 
             entity.Property(e => e.Id)
                 .HasDefaultValueSql("(newid())");

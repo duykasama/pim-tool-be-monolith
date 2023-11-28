@@ -6,4 +6,5 @@ namespace PIMTool.Core.Interfaces.Repositories;
 
 public interface IEmployeeRepository : IRepository<Employee, Guid>
 {
+    void SetModified(Employee employee);
 }
