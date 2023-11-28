@@ -18,18 +18,4 @@
       </Content>
     </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\PIMTool.Core\PIMTool.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <EmbeddedResource Include="Scripts\01.Init_Database.sql" />
-      <None Remove="Scripts\02.Update_Group.sql" />
-      <EmbeddedResource Include="Scripts\02.Update_Group.sql" />
-      <None Remove="Scripts\03.Add_Project_Indexes.sql" />
-      <EmbeddedResource Include="Scripts\03.Add_Project_Indexes.sql" />
-      <None Remove="Scripts\04.Update_Project_Indexes.sql" />
-      <EmbeddedResource Include="Scripts\04.Update_Project_Indexes.sql" />
-    </ItemGroup>
-
 </Project>

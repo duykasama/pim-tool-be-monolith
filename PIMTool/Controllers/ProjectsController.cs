@@ -35,12 +35,12 @@ public class ProjectsController : BaseController
         ).ConfigureAwait(false);
     }
     
-    [Route("{id:int}")]
+    [Route("{projectNumber:int}")]
     [HttpPost]
-    public async Task<IActionResult> GetProject(int id)
+    public async Task<IActionResult> GetProject(int projectNumber)
     {
         return await ExecuteApiAsync(
-            async () => await _projectService.FindProjectByProjectNumberAsync(id).ConfigureAwait(false)
+            async () => await _projectService.FindProjectByProjectNumberAsync(projectNumber).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 

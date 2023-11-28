@@ -26,7 +26,7 @@ public class GlobalExceptionMiddleware
         {
             _logger.LogError(ex, "Unexpected exception");
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 500;
+            context.Response.StatusCode = 200;
 
             await context.Response.WriteAsync(new
             {

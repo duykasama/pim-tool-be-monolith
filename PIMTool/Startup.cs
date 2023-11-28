@@ -97,36 +97,7 @@ public class Startup
     {
         LogHelper.InitLoggerService(new NLogService(Scope));
 
-        services.AddSwaggerGen(options =>
-        {
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-            {
-                Scheme = "Bearer",
-                Type = SecuritySchemeType.ApiKey, 
-                In = ParameterLocation.Header,
-                Name = "Authorization"
-            });
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-            {
-                {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        },
-                        Scheme = "oauth2",
-                        Name = "Bearer",
-                        In = ParameterLocation.Header
-                    },
-                    new List<string>()
-                }
-            });
-            // var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-            // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-            // options.IncludeXmlComments(xmlPath);
-        });
+        services.AddSwaggerGen();
 
         services.AddControllers().AddNewtonsoftJson(opt => 
             opt.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore);
@@ -143,7 +114,7 @@ public class Startup
         app.UseSwagger();
         app.UseSwaggerUI(options =>
         {
-            options.DocumentTitle = "This is PIMTool";
+            options.DocumentTitle = "PIMTool";
             
         });
         app.UseRouting();
