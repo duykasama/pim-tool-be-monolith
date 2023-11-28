@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PIMTool.Controllers.Base;
 using PIMTool.Core.Interfaces.Services;
 using PIMTool.Core.Models;

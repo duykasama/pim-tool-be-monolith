@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PIMTool.Controllers.Base;
+using PIMTool.Core.Attributes;
 using PIMTool.Core.Interfaces.Services;
 using PIMTool.Core.Models.Request;
 
@@ -87,6 +87,15 @@ public class ProjectsController : BaseController
     {
         return await ExecuteApiAsync(
             async () => await _projectService.DeleteMultipleProjectsAsync(request).ConfigureAwait(false)
+        ).ConfigureAwait(false);
+    }
+
+    [Route("import-from-file")]
+    [HttpPost]
+    public async Task<IActionResult> ImportProjectsFromFile([AcceptFileExtensions(".csv,.xlsx")] IFormFile file)
+    {
+        return await ExecuteApiAsync(
+            async () => await _projectService.ImportProjectsFromFileAsync(file).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 }
