@@ -98,4 +98,14 @@ public class ProjectsController : BaseController
             async () => await _projectService.ImportProjectsFromFileAsync(file).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
+    
+    [Route("export-to-excel")]
+    [HttpPost]
+    public async Task<IActionResult> ExportProjectsToFile()
+    {
+        return await _projectService.ExportProjectsToFileAsync();
+        // return await ExecuteApiAsync(
+        //     async () => await _projectService.ExportProjectsToFileAsync().ConfigureAwait(false)
+        // ).ConfigureAwait(false);
+    }
 }
