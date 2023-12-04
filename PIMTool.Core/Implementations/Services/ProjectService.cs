@@ -8,6 +8,7 @@ using ExcelDataReader;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using NPOI.HSSF.Record;
@@ -645,37 +646,82 @@ public class ProjectService : BaseService, IProjectService
         return new FileStreamResult(File.OpenRead(fileName), "application/excel");
     }
 
-    public async Task<FileStreamResult> ExportProjectsToFileAsync()
+    public async Task<FileStreamResult> ExportProjectsToFileAsync(ExportProjectsToFileRequest request)
     {
+        #region Filter projects
 
-        #region XlsIO
+        var projects = (await _projectRepository.FindByAsync(p => !p.IsDeleted))
+            .Include(p => p.Group)
+            .ThenInclude(g => g.Leader)
+            .Include(p => p.Employees)
+            .AsQueryable();
 
-        // using var engine = new ExcelEngine();
-        // IApplication application = engine.Excel;
-        // application.DefaultVersion = ExcelVersion.Xlsx;
-        // var workbook = application.Workbooks.Create(1);
-        // var worksheet = workbook.Worksheets[0];
-        // worksheet.Range["A3"].Text = "46036 Michigan Ave";
-        // worksheet.Range["A4"].Text = "Canton, USA";
-        // worksheet.Range["A5"].Text = "Phone: +1 231-231-2310";
-        //
-        // MemoryStream memoryStream = new MemoryStream();
-        // workbook.SaveAs(memoryStream);
-        // memoryStream.Position = 0;
-        // FileStreamResult result = new FileStreamResult(memoryStream, "application/excel");
-        // result.FileDownloadName = "test-excel-file.xlsx";
-        // return result;
+        if (!string.IsNullOrEmpty(request.ProjectName))
+        {
+            projects = projects.Where(p => EF.Functions.Like(p.Name, $"%{request.ProjectName}%"));
+        }
 
+        if (!string.IsNullOrEmpty(request.Customer))
+        {
+            projects = projects.Where(p => EF.Functions.Like(p.Customer, $"%{request.Customer}%"));
+        }
+        
+        if (!string.IsNullOrEmpty(request.LeaderName))
+        {
+            // projects = projects.Where(p => p.Group.Leader.FirstName.Contains(request.Customer, StringComparison.OrdinalIgnoreCase) ||
+            //                                p.Group.Leader.LastName.Contains(request.Customer, StringComparison.OrdinalIgnoreCase));
+            projects = projects.Where(p => EF.Functions.Like(p.Group.Leader.FirstName, $"%{request.LeaderName}%") ||
+                                           EF.Functions.Like(p.Group.Leader.LastName, $"%{request.LeaderName}%"));
+        }
+        
+        if (request.StartDateFrom != default)
+        {
+            projects = projects.Where(p => p.StartDate >= request.StartDateFrom);
+        }
+        
+        if (request.StartDateTo != default)
+        {
+            projects = projects.Where(p => p.StartDate <= request.StartDateTo);
+        }
+        
+        if (request.EndDateFrom != default)
+        {
+            projects = projects.Where(p => p.EndDate >= request.EndDateFrom);
+        }
+        
+        if (request.StartDateFrom != default)
+        {
+            projects = projects.Where(p => p.EndDate <= request.EndDateTo);
+        }
+
+        if (!string.IsNullOrEmpty(request.Status))
+        {
+            projects = projects.Where(p => EF.Functions.Like(p.Status, $"%{request.Status}%"));
+        }
+
+        if (!string.IsNullOrEmpty(request.OrderBy))
+        {
+            projects = request.OrderBy.ToUpper() switch
+            {
+                "PROJECTNUMBER" => projects.OrderBy(p => p.ProjectNumber),
+                "PROJECTNAME" => projects.OrderBy(p => p.Name),
+                "CUSTOMER" => projects.OrderBy(p => p.Customer),
+                "PROJECTSTATUS" => projects.OrderBy(p => p.Status),
+                "STARTDATE" => projects.OrderBy(p => p.StartDate),
+                "ENDDATE" => projects.OrderBy(p => p.EndDate),
+                _ => projects.OrderBy(p => p.ProjectNumber)
+            };
+        }
+        else
+        {
+            projects = projects.OrderBy(p => p.ProjectNumber);
+        }
+
+        projects = projects.Take(request.NumberOfRows);
         #endregion
 
-        var projects = await (await _projectRepository.FindByAsync(p => !p.IsDeleted))
-            .OrderBy(p => p.ProjectNumber)
-            .Take(100)
-            .Include(p => p.Group)
-            .Include(p => p.Employees)
-            .ToListAsync().ConfigureAwait(false);
-        
-       
+
+        var projectList = await projects.ToListAsync().ConfigureAwait(false);
         IWorkbook workbook = new XSSFWorkbook();
         var excelSheet = workbook.CreateSheet("Projects");
         var headerStyle = workbook.SetBackgroundColor(IndexedColors.Yellow);
@@ -709,7 +755,7 @@ public class ProjectService : BaseService, IProjectService
         }
 
         var rowIndex = 1;
-        foreach (var project in projects)
+        foreach (var project in projectList)
         {
             row = excelSheet.CreateRow(rowIndex);
             var cellIndex = 0;
