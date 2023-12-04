@@ -1,11 +1,8 @@
 ﻿using System.Reflection;
-using Autofac;
 using DbUp;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using PIMTool.Core.Constants;
 using PIMTool.Core.Exceptions;
-using PIMTool.Core.Interfaces.Repositories;
 
 namespace PIMTool.Core.Helpers;
 

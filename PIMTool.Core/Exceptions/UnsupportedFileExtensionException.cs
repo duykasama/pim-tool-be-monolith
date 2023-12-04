@@ -1,6 +1,8 @@
-﻿namespace PIMTool.Core.Exceptions;
+﻿using PIMTool.Core.Exceptions.Base;
 
-public class UnsupportedFileExtensionException
+namespace PIMTool.Core.Exceptions;
+
+public class UnsupportedFileExtensionException : ArgumentException, IAppException
 {
-    
+    public override string Message => "File extension is not supported";
 }

@@ -1,6 +1,8 @@
-﻿namespace PIMTool.Core.Exceptions;
+﻿using PIMTool.Core.Exceptions.Base;
 
-public class UnsupportedFileContentFormatException : ArgumentException
+namespace PIMTool.Core.Exceptions;
+
+public class UnsupportedFileContentFormatException : ArgumentException, IAppException
 {
-    public override string Message => "File content format is not supportec";
+    public override string Message => "File content format is not supported";
 }
