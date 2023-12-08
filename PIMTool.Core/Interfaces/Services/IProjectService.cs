@@ -19,7 +19,6 @@ public interface IProjectService
     Task<ApiActionResult> DeleteProjectAsync(Guid id);
     Task<ApiActionResult> FindProjectByProjectNumberAsync(int projectNumber);
     Task<ApiActionResult> DeleteMultipleProjectsAsync(DeleteMultipleProjectsRequest request);
-    Task<ApiActionResult> ImportProjectsFromFileAsync(IFormFile file);
     Task<FileStreamResult> ExportProjectsToFileAsync(ExportProjectsToFileRequest request);
     Task<FileStreamResult> ImportProjectsFromFileNpoiAsync(IFormFile file);
 }

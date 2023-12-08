@@ -19,7 +19,7 @@ public static class ExcelStyleHelper
     {
         for (var i = 0; i < row.LastCellNum; i++)
         {
-            var cell = row.GetCell(i);
+            var cell = row.GetCell(i) ?? row.CreateCell(i);
             cell.CellStyle = SetBackgroundColor(row.Sheet.Workbook, color);
         }
     }

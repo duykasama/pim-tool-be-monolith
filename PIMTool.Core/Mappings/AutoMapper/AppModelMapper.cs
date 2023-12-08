@@ -43,9 +43,18 @@ public static class AppModelMapper
         config.CreateMap<UpdateGroupRequest, Group>();
         config.CreateMap<Group, DtoGroup>();
         config.CreateMap<Group, DtoGroupDetail>();
-        config.CreateMap<UserRegisterModel, PIMUser>()
-            .AfterMap((model, user) => user.Password = EncryptionHelper.Encrypt(model.Password));
         
+        #endregion
+
+        #region User mappings
+        
+        config.CreateMap<UserRegisterModel, PIMUser>()
+            .AfterMap((model, user) =>
+            {
+                user.Password = EncryptionHelper.Encrypt(model.Password);
+                user.Role = "Employee";
+            });
+
         #endregion
     }
 }

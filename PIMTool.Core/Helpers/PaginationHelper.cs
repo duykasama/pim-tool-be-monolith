@@ -1,22 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AutoMapper;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Query;
+﻿using AutoMapper;
 using PIMTool.Core.Models;
 
 namespace PIMTool.Core.Helpers;
 
 public static class PaginationHelper
 {
-    public static async Task<PaginatedResult> BuildPaginatedResult<T, TDto>(IMapper mapper, IQueryable<T> source, int pageSize, int pageIndex)
+    public static Task<PaginatedResult> BuildPaginatedResult<T, TDto>(IMapper mapper, IQueryable<T> source, int pageSize, int pageIndex)
     {
-        var total = await source.CountAsync().ConfigureAwait(false);
+        var total = source.Count();
         if (total == 0)
         {
-            return new PaginatedResult()
+            return Task.FromResult(new PaginatedResult()
             {
                 PageIndex = 1,
                 PageSize = pageSize,
@@ -24,9 +18,10 @@ public static class PaginationHelper
                 LastPage = 1,
                 IsLastPage = true,
                 Total = total
-            };
+            });
         }
-        
+
+        pageSize = Math.Max(1, pageSize);
         var lastPage = (int)Math.Ceiling((decimal)total / pageSize);
         lastPage = lastPage < 1 ? 1 : lastPage;
         pageIndex = pageIndex > lastPage ? lastPage : pageIndex;
@@ -41,7 +36,7 @@ public static class PaginationHelper
             var reverse = source.Reverse();
         
             var res = reverse.Skip(skip).Take(take);
-            return new PaginatedResult()
+            return Task.FromResult(new PaginatedResult()
             {
                 PageIndex = pageIndex,
                 PageSize = pageSize,
@@ -49,13 +44,13 @@ public static class PaginationHelper
                 LastPage = lastPage,
                 IsLastPage = isLastPage,
                 Total = total
-            };
+            });
         }
         
         var results = source.Skip((pageIndex - 1) * pageSize)
             .Take(pageSize);
 
-        return new PaginatedResult()
+        return Task.FromResult(new PaginatedResult()
         {
             PageIndex = pageIndex,
             PageSize = pageSize,
@@ -63,7 +58,7 @@ public static class PaginationHelper
             LastPage = lastPage,
             IsLastPage = isLastPage,
             Total = total
-        };
+        });
     }
     
     public static async Task<PaginatedResult> BuildPaginatedResult<T>(IQueryable<T> source, int pageSize, int pageIndex)

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-
-namespace PIMTool.Middlewares;
+﻿namespace PIMTool.Middlewares;
 
 public class GlobalExceptionMiddleware
 {
@@ -26,7 +21,7 @@ public class GlobalExceptionMiddleware
         {
             _logger.LogError(ex, "Unexpected exception");
             context.Response.ContentType = "application/json";
-            context.Response.StatusCode = 200;
+            context.Response.StatusCode = 500;
 
             await context.Response.WriteAsync(new
             {

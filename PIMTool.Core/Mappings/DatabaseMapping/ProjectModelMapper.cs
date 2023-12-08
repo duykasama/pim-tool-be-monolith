@@ -45,7 +45,7 @@ public class ProjectModelMapper : IModelMapper
 
             entity.HasOne(d => d.Group).WithMany(p => p.Projects)
                 .HasForeignKey(d => d.GroupId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.ClientNoAction)
                 .HasConstraintName("FK__Project__GroupId__53D770D6");
 
             entity.HasMany(d => d.Employees).WithMany(p => p.Projects)
@@ -53,7 +53,7 @@ public class ProjectModelMapper : IModelMapper
                     "ProjectEmployee",
                     r => r.HasOne<Employee>().WithMany()
                         .HasForeignKey("EmployeeId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .OnDelete(DeleteBehavior.ClientNoAction)
                         .HasConstraintName("FK__Project_E__Emplo__5D60DB10"),
                     l => l.HasOne<Project>().WithMany()
                         .HasForeignKey("ProjectId")

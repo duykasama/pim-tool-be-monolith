@@ -7,7 +7,7 @@ namespace PIMTool.Core.Domain.Entities;
 public class PIMUser : VersionableEntity<Guid, Guid>
 {
     public string FirstName { get; set; } = null!;
-    public string LastName { get; set; }
+    public string? LastName { get; set; }
     public DateTime BirthDate { get; set; }
     public string Email { get; set; } = null!;
     public string Password { get; set; } = null!;

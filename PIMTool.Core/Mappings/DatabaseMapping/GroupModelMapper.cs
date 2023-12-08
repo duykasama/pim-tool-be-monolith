@@ -28,7 +28,7 @@ public class GroupModelMapper : IModelMapper
 
             entity.HasOne(d => d.Leader).WithMany(p => p.Groups)
                 .HasForeignKey(d => d.LeaderId)
-                .OnDelete(DeleteBehavior.ClientSetNull);
+                .OnDelete(DeleteBehavior.ClientNoAction);
         });
     }
 }

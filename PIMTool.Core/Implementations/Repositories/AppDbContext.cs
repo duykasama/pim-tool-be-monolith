@@ -11,8 +11,22 @@ namespace PIMTool.Core.Implementations.Repositories;
 
 public class AppDbContext : DbContext, IAppDbContext
 {
+    
+    public AppDbContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public AppDbContext()
+    {
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        if (optionsBuilder.IsConfigured)
+        {
+            return;
+        }
+        
         var connectionString = DataAccessHelper.GetDefaultConnection();
         optionsBuilder.UseSqlServer(connectionString,options =>
                 options.CommandTimeout(DataAccessConstants.DEAULT_COMMAND_TIMEOUT_IN_SECONDS))

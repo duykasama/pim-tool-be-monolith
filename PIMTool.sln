@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PIMTool.Core", "PIMTool.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PIMTool.CronJob", "PIMTool.CronJob\PIMTool.CronJob.csproj", "{1F241391-2B78-4CDE-B78C-CA671FAC4254}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PIMTool.Test", "PIMTool.Test\PIMTool.Test.csproj", "{03C1C13A-8678-4EF1-B578-BF9D066706FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,6 +26,10 @@ Global
 		{1F241391-2B78-4CDE-B78C-CA671FAC4254}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1F241391-2B78-4CDE-B78C-CA671FAC4254}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1F241391-2B78-4CDE-B78C-CA671FAC4254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03C1C13A-8678-4EF1-B578-BF9D066706FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03C1C13A-8678-4EF1-B578-BF9D066706FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03C1C13A-8678-4EF1-B578-BF9D066706FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03C1C13A-8678-4EF1-B578-BF9D066706FE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection

@@ -8,15 +8,8 @@ using ExcelDataReader;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using NPOI.HSSF.Record;
-using NPOI.HSSF.Record.Chart;
-using NPOI.HSSF.UserModel;
-using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
-using NPOI.Util.ArrayExtensions;
 using NPOI.XSSF.UserModel;
 using PIMTool.Core.Constants;
 using PIMTool.Core.Domain.Entities;
@@ -28,7 +21,6 @@ using PIMTool.Core.Interfaces.Services;
 using PIMTool.Core.Models;
 using PIMTool.Core.Models.Dtos;
 using PIMTool.Core.Models.Request;
-using SixLabors.ImageSharp;
 
 namespace PIMTool.Core.Implementations.Services;
 
@@ -317,155 +309,14 @@ public class ProjectService : BaseService, IProjectService
         await _unitOfWork.CommitAsync();
         return new ApiActionResult(true);
     }
-    public async Task<ApiActionResult> ImportProjectsFromFileAsync(IFormFile file)
+
+    public async Task<FileStreamResult> ImportProjectsFromFileNpoiAsync(IFormFile file)
     {
-        var errorList = new List<string>();
-        var addedProjectCount = 0;
-        
         if (!file.FileName.IsExcelFile() && !file.FileName.IsCsvFile())
         {
             throw new UnsupportedFileExtensionException();
         }
         
-        using var reader = file.FileName.IsExcelFile() 
-            ? ExcelReaderFactory.CreateReader(file.OpenReadStream())
-            : ExcelReaderFactory.CreateCsvReader(file.OpenReadStream());
-        var dataTables = reader.AsDataSet().Tables;
-        
-        foreach (DataTable table in dataTables)
-        {
-            var isValidData = true;
-            if (table.Rows.Count > 0 && !ExcelFileHelper.ValidHeaders(table.Rows[0].ItemArray))
-            {
-                throw new UnsupportedFileContentFormatException();
-            }
-            for (int i = 1; i < table.Rows.Count; i++)
-            {
-                var dataRow = table.Rows[i];
-
-                #region Validate data row
-
-                if (!int.TryParse(dataRow.ItemArray[0]?.ToString(), out var projectNumber))
-                {
-                    isValidData = false;
-                    errorList.Add($"Project number is invalid at row {i}");
-                }
-                
-                var projectName = dataRow.ItemArray[1]?.ToString() ?? string.Empty;
-                var customer = dataRow.ItemArray[2]?.ToString() ?? string.Empty;
-                var groupIdString = dataRow.ItemArray[3]?.ToString() ?? string.Empty;
-                var memberIdString = dataRow.ItemArray[4]?.ToString() ?? string.Empty;
-                var status = dataRow.ItemArray[5]?.ToString() ?? ProjectStatus.NEW;
-                
-                if (!DateTime.TryParse(dataRow.ItemArray[6]?.ToString(), out var startDate))
-                {
-                    isValidData = false;
-                    errorList.Add($"Start is invalid at row {i+1}");
-                }
-                
-                if (!DateTime.TryParse(dataRow.ItemArray[7]?.ToString(), out var endDate))
-                {
-                    isValidData = false;
-                    errorList.Add($"End date is invalid at row {i+1}");
-                }
-
-                if (!Guid.TryParse(groupIdString, out var groupId))
-                {
-                    isValidData = false;
-                    errorList.Add($"Group Id is invalid at row {i+1}");
-                }
-
-                var memberIds = new List<Guid>();
-
-                foreach (var memberId in memberIdString.Split(","))
-                {
-                    if (memberId.IsNullOrEmpty())
-                    {
-                        isValidData = false;
-                        errorList.Add($"Member value at row {i+1} is missing");
-                        continue;
-                    }
-                    
-                    if (!Guid.TryParse(memberId.Trim(), out var memberGuidId))
-                    {
-                        isValidData = false;
-                        errorList.Add($"Member Id is invalid at row {i+1} ({memberId})");
-                        continue;
-                    }
-                    
-                    memberIds.Add(memberGuidId);
-                }
-                
-                #endregion
-
-                #region Verify data
-
-                var project = await _projectRepository.GetAsync(p => p.ProjectNumber == projectNumber);
-                if (project is not null)
-                {
-                    if (!project.IsDeleted)
-                    {
-                        isValidData = false;
-                        errorList.Add($"Project number already exists at row {i+1} ({projectNumber})");
-                    }
-                    else
-                    {
-                        await _projectRepository.DeleteAsync(project.Id);
-                    }
-                }
-
-                var group = await _groupRepository.GetAsync(g => g.Id == groupId && !g.IsDeleted);
-                if (group is null && groupId != default)
-                {
-                    isValidData = false;
-                    errorList.Add($"Group does not exist at row {i+1} ({groupId})");
-                }
-                
-                foreach (var memberId in memberIds)
-                {
-                    if (!await _employeeRepository.ExistsAsync(e => !e.IsDeleted && e.Id == memberId))
-                    {
-                        isValidData = false;
-                        errorList.Add($"Member with id {memberId} does not exist oa");
-                    }
-                }
-
-                #endregion
-
-                if (!isValidData)
-                {
-                    continue;
-                }
-
-                var projectCreate = new CreateProjectRequest()
-                {
-                    ProjectNumber = projectNumber,
-                    Name = projectName,
-                    Customer = customer,
-                    GroupId = groupId,
-                    MemberIds = memberIds,
-                    Status = status.ToUpper(),
-                    StartDate = startDate,
-                    EndDate = endDate
-                };
-                await _projectRepository.AddAsync(_mapper.Map<Project>(projectCreate));
-                addedProjectCount++;
-            }
-        }
-        
-        if (!errorList.IsNullOrEmpty())
-        {
-            var errorMsg = new StringBuilder();
-            errorMsg.AppendJoin(", ", errorList);
-            return new ApiActionResult(false) {Detail = errorMsg.ToString()};
-        }
-
-        await _unitOfWork.CommitAsync();
-        return new ApiActionResult(true) {Detail = $"Added {addedProjectCount} projects"};
-    }
-
-    public async Task<FileStreamResult> ImportProjectsFromFileNpoiAsync(IFormFile file)
-    {
         await using var stream = file.OpenReadStream();
         stream.Position = 0;
         var workbook = new XSSFWorkbook(stream);
@@ -482,15 +333,15 @@ public class ProjectService : BaseService, IProjectService
 
             #region Validate data
 
-            var isValidProjectNumber = int.TryParse(row.GetCell(0).ToString(), out var projectNumber);
-            var projectName = row.GetCell(1).ToString();
-            var customer = row.GetCell(2).ToString();
-            var isValidGroupId = Guid.TryParse(row.GetCell(3).ToString(), out var groupId);
-            var memberIds = row.GetCell(4).ToString()?.Split(",");
+            var isValidProjectNumber = int.TryParse(row.GetCell(0)?.ToString(), out var projectNumber);
+            var projectName = row.GetCell(1)?.ToString();
+            var customer = row.GetCell(2)?.ToString();
+            var isValidGroupId = Guid.TryParse(row.GetCell(3)?.ToString(), out var groupId);
+            var memberIds = row.GetCell(4)?.ToString()?.Split(",");
             var memberGuidIds = new List<Guid>();
-            var status = row.GetCell(5).ToString();
-            var isValidStartDate = DateTime.TryParse(row.GetCell(6).ToString(), out var startDate);
-            var isValidEndDate = DateTime.TryParse(row.GetCell(7).ToString(), out var endDate);
+            var status = row.GetCell(5)?.ToString();
+            var isValidStartDate = DateTime.TryParse(row.GetCell(6)?.ToString(), out var startDate);
+            var isValidEndDate = DateTime.TryParse(row.GetCell(7)?.ToString(), out var endDate);
 
             if (!isValidProjectNumber)
             {
@@ -635,15 +486,22 @@ public class ProjectService : BaseService, IProjectService
             await _unitOfWork.CommitAsync();
             return new FileStreamResult(Stream.Null, "application/excel");
         }
-
-        await _unitOfWork.RollbackAsync();
             
         sheet.AutoSizeColumns();
 
         var fileName = Guid.NewGuid() + ".xlsx";
         await using var fs = File.Open(fileName, FileMode.Create);
         workbook.Write(fs);
-        return new FileStreamResult(File.OpenRead(fileName), "application/excel");
+        await fs.DisposeAsync();
+
+        var tempStream = File.OpenRead(fileName);
+        tempStream.Position = 0;
+        var memoryStream = new MemoryStream();
+        await tempStream.CopyToAsync(memoryStream);
+        await tempStream.DisposeAsync();
+        File.Delete(fileName);
+        
+        return new FileStreamResult(memoryStream, "application/excel");
     }
 
     public async Task<FileStreamResult> ExportProjectsToFileAsync(ExportProjectsToFileRequest request)
@@ -668,8 +526,6 @@ public class ProjectService : BaseService, IProjectService
         
         if (!string.IsNullOrEmpty(request.LeaderName))
         {
-            // projects = projects.Where(p => p.Group.Leader.FirstName.Contains(request.Customer, StringComparison.OrdinalIgnoreCase) ||
-            //                                p.Group.Leader.LastName.Contains(request.Customer, StringComparison.OrdinalIgnoreCase));
             projects = projects.Where(p => EF.Functions.Like(p.Group.Leader.FirstName, $"%{request.LeaderName}%") ||
                                            EF.Functions.Like(p.Group.Leader.LastName, $"%{request.LeaderName}%"));
         }
