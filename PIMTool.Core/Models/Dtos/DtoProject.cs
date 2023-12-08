@@ -10,6 +10,6 @@ public class DtoProject
     public string Status { get; set; }
     public string Customer { get; set; }
     public DateTime StartDate { get; set; }
-    public int Version { get; set; }
-    public Guid GroupId { get; set; }
+    // public int Version { get; set; }
+    // public Guid GroupId { get; set; }
 }

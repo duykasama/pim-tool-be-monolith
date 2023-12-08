@@ -10,5 +10,5 @@ public class DtoEmployee
 
     public string LastName { get; set; } = null!;
 
-    public DateTime BirthDate { get; set; }
+    // public DateTime BirthDate { get; set; }
 }

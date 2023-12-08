@@ -54,7 +54,7 @@ public class GroupService : BaseService, IGroupService
         {
             var conjunctionWhere =
                 ExpressionHelper.CombineOrExpressions<Group>(req.SearchCriteria.ConjunctionSearchInfos, p => !p.IsDeleted);
-            groups = groups.AsEnumerable().Where(conjunctionWhere).AsQueryable();
+            groups = groups.AsEnumerable().Where(conjunctionWhere.Compile()).AsQueryable();
 
             var disjunctionWhere =
                 ExpressionHelper.CombineAndExpressions<Group>(req.SearchCriteria.DisjunctionSearchInfos, p => true);
@@ -69,7 +69,7 @@ public class GroupService : BaseService, IGroupService
                 : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
         }
         
-        var paginatedResult = PaginationHelper.BuildPaginatedResult<Group, DtoGroup>(_mapper, orderedGroups, req.PageSize,
+        var paginatedResult = await PaginationHelper.BuildPaginatedResult(orderedGroups.AsQueryable(), req.PageSize,
                 req.PageIndex);
         return new ApiActionResult(true) { Data = paginatedResult };
     }
@@ -123,7 +123,7 @@ public class GroupService : BaseService, IGroupService
         return new ApiActionResult(true);
     }
 
-    public async Task<ApiActionResult> DeleteProjectAsync(Guid id)
+    public async Task<ApiActionResult> DeleteGroupAsync(Guid id)
     {
         if (!await _groupRepository.ExistsAsync(e => !e.IsDeleted && e.Id == id))
         {

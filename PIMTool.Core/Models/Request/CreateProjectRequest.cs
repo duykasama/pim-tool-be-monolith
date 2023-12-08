@@ -10,7 +10,7 @@ public class CreateProjectRequest
     [RequiredGuid]
     public Guid GroupId { get; set; }
     
-    [Range(typeof(int), "1", "9999")]
+    [Range(typeof(int), "1", "2147483647")]
     public int ProjectNumber { get; set; }
     
     [Required]
@@ -24,9 +24,8 @@ public class CreateProjectRequest
     [Required]
     [MaxLength(3)]
     public string Status { get; set; }
-    
-    // [NotRequired]
-    // public string Members { get; set; }
+
+    public IList<Guid> MemberIds { get; set; } = new List<Guid>();
     
     [RequiredDate]
     [DateIsBefore(nameof(EndDate), "End Date must be after Start Date")]

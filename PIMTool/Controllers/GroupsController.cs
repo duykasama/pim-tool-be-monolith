@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PIMTool.Controllers.Base;
 using PIMTool.Core.Interfaces.Services;
@@ -7,6 +6,7 @@ using PIMTool.Core.Models.Request;
 
 namespace PIMTool.Controllers;
 
+[Authorize]
 [Route("[controller]")]
 public class GroupsController : BaseController
 {
@@ -67,7 +67,7 @@ public class GroupsController : BaseController
     public async Task<IActionResult> DeleteGroup(Guid id)
     {
         return await ExecuteApiAsync(
-            async () => await _groupService.DeleteProjectAsync(id).ConfigureAwait(false)
+            async () => await _groupService.DeleteGroupAsync(id).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 }

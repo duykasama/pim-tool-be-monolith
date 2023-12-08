@@ -11,5 +11,5 @@ public interface IGroupService : IService
     Task<ApiActionResult> FindGroupsAsync(SearchGroupsRequest searchGroupsRequest);
     Task<ApiActionResult> FindGroupAsync(Guid id);
     Task<ApiActionResult> UpdateGroupAsync(UpdateGroupRequest request, Guid id, string updaterId);
-    Task<ApiActionResult> DeleteProjectAsync(Guid id);
+    Task<ApiActionResult> DeleteGroupAsync(Guid id);
 }

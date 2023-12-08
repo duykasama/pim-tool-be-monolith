@@ -10,4 +10,9 @@ public class EmployeeRepository : Repository<Employee, Guid>, IEmployeeRepositor
     public EmployeeRepository(IAppDbContext appDbContext) : base(appDbContext)
     {
     }
+
+    public void SetModified(Employee employee)
+    {
+        _appDbContext.SetModified(employee);
+    }
 }

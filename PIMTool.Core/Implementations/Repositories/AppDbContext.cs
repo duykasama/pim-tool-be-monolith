@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PIMTool.Core.Constants;
 using PIMTool.Core.Helpers;
 using PIMTool.Core.Interfaces;
@@ -10,13 +11,28 @@ namespace PIMTool.Core.Implementations.Repositories;
 
 public class AppDbContext : DbContext, IAppDbContext
 {
+    
+    public AppDbContext(DbContextOptions options) : base(options)
+    {
+    }
+
+    public AppDbContext()
+    {
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        if (optionsBuilder.IsConfigured)
+        {
+            return;
+        }
+        
         var connectionString = DataAccessHelper.GetDefaultConnection();
         optionsBuilder.UseSqlServer(connectionString,options =>
                 options.CommandTimeout(DataAccessConstants.DEAULT_COMMAND_TIMEOUT_IN_SECONDS))
             .EnableSensitiveDataLogging()
-            .EnableDetailedErrors();
+            .EnableDetailedErrors()
+            .LogTo(Console.WriteLine, LogLevel.Information);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -43,7 +59,12 @@ public class AppDbContext : DbContext, IAppDbContext
     {
         base.Entry<T>(item).State = EntityState.Modified;
     }
-    
+
+    public void SetDeleted<T>(T item) where T : class
+    {
+        base.Entry(item).State = EntityState.Deleted;
+    }
+
     public void Refresh<T>(T item) where T : class
     {
         base.Entry<T>(item).Reload();
@@ -60,7 +81,12 @@ public class AppDbContext : DbContext, IAppDbContext
         return 0;
         // return await Database.ExecuteSqlRawAsync(sql, parameters);
     }
-    
+
+    public new void Update<T>(T entity)
+    {
+        base.Update(entity!);
+    }
+
     public new void SaveChanges()
     {
         base.SaveChanges();

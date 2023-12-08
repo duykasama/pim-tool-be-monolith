@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PIMTool.Controllers.Base;
+using PIMTool.Core.Attributes;
 using PIMTool.Core.Interfaces.Services;
 using PIMTool.Core.Models.Request;
 
@@ -35,12 +35,12 @@ public class ProjectsController : BaseController
         ).ConfigureAwait(false);
     }
     
-    [Route("{id:int}")]
+    [Route("{projectNumber:int}")]
     [HttpPost]
-    public async Task<IActionResult> GetProject(int id)
+    public async Task<IActionResult> GetProject(int projectNumber)
     {
         return await ExecuteApiAsync(
-            async () => await _projectService.FindProjectByProjectNumberAsync(id).ConfigureAwait(false)
+            async () => await _projectService.FindProjectByProjectNumberAsync(projectNumber).ConfigureAwait(false)
         ).ConfigureAwait(false);
     }
 
@@ -88,5 +88,26 @@ public class ProjectsController : BaseController
         return await ExecuteApiAsync(
             async () => await _projectService.DeleteMultipleProjectsAsync(request).ConfigureAwait(false)
         ).ConfigureAwait(false);
+    }
+
+    [Route("import-from-file")]
+    [HttpPost]
+    public async Task<IActionResult> ImportProjectsFromFile([AcceptFileExtensions(".csv,.xlsx")] IFormFile file)
+    {
+        return await _projectService.ImportProjectsFromFileNpoiAsync(file);
+
+        // return await ExecuteApiAsync(
+        //     async () => await _projectService.ImportProjectsFromFileNpoiAsync(file).ConfigureAwait(false)
+        // ).ConfigureAwait(false);
+    }
+    
+    [Route("export-to-excel")]
+    [HttpPost]
+    public async Task<IActionResult> ExportProjectsToFile(ExportProjectsToFileRequest request)
+    {
+        return await _projectService.ExportProjectsToFileAsync(request);
+        // return await ExecuteApiAsync(
+        //     async () => await _projectService.ExportProjectsToFileAsync().ConfigureAwait(false)
+        // ).ConfigureAwait(false);
     }
 }

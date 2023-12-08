@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using Autofac;
+﻿using Autofac;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Microsoft.EntityFrameworkCore;
 using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Exceptions;
@@ -31,35 +31,46 @@ public class EmployeeService : BaseService, IEmployeeService
 
     public async Task<ApiActionResult> GetAllEmployeesAsync()
     {
-        var result = await _employeeRepository.GetAllAsync();
-        var resultDto = _mapper.Map<IEnumerable<DtoEmployee>>(await result.ToListAsync());
-        return new ApiActionResult(true) { Data = resultDto };
+        var employees = await _employeeRepository.GetAllAsync();
+        var employeesDto = employees.Where(e => !e.IsDeleted).ProjectTo<DtoEmployee>(_mapper.ConfigurationProvider);
+        return new ApiActionResult(true) { Data = employeesDto };
     }
 
     public async Task<ApiActionResult> FindEmployeesAsync(SearchEmployeesRequest req)
     {
-        var employees = (await _employeeRepository.FindByAsync(e => !e.IsDeleted));
+        var employees = await _employeeRepository.FindByAsync(e => !e.IsDeleted);
 
         if (req.SearchCriteria is not null)
         {
-            var conjunctionWhere =
-                ExpressionHelper.CombineOrExpressions<Employee>(req.SearchCriteria.ConjunctionSearchInfos, p => !p.IsDeleted);
-            employees = employees.AsEnumerable().Where(conjunctionWhere).AsQueryable();
-
-            var disjunctionWhere =
-                ExpressionHelper.CombineAndExpressions<Employee>(req.SearchCriteria.DisjunctionSearchInfos, p => true);
-            employees = employees.AsEnumerable().Where(disjunctionWhere).AsQueryable();
+            // var conjunctionWhere =
+            //     ExpressionHelper.CombineOrExpressions<Employee>(req.SearchCriteria.ConjunctionSearchInfos, p => !p.IsDeleted);
+            // employees = employees.AsEnumerable().Where(conjunctionWhere.Compile()).AsQueryable();
+            //
+            // var disjunctionWhere =
+            //     ExpressionHelper.CombineAndExpressions<Employee>(req.SearchCriteria.DisjunctionSearchInfos, p => true);
+            // employees = employees.Where(disjunctionWhere).AsQueryable();
         }
 
-        var orderEmployees = employees.OrderBy(p => p.CreatedAt);
+        var orderedEmployees = employees.OrderBy(p => "");
         if (req.SortByInfos is not null)
         {
-            orderEmployees = req.SortByInfos.Aggregate(orderEmployees, (current, sort) => sort.Ascending
-                ? current.ThenBy(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName))
-                : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
+            foreach (var sortInfo in req.SortByInfos)
+            {
+                orderedEmployees = sortInfo.FieldName switch
+                {
+                    "firstName" => sortInfo.Ascending
+                        ? orderedEmployees.OrderBy(e => e.FirstName)
+                        : orderedEmployees.OrderByDescending(e => e.FirstName),
+                    _ => orderedEmployees
+                };
+            }
+
+            // orderedEmployees = req.SortByInfos.Aggregate(orderedEmployees, (current, sort) => sort.Ascending
+            //     ? current.ThenBy(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName))
+            //     : current.ThenByDescending(p => ReflectionHelper.GetPropertyValueByName(p, sort.FieldName)));
         }
 
-        var paginatedResult = PaginationHelper.BuildPaginatedResult<Employee, DtoEmployee>(_mapper, orderEmployees, req.PageSize, req.PageIndex);
+        var paginatedResult = await PaginationHelper.BuildPaginatedResult(orderedEmployees.ProjectTo<DtoEmployee>(_mapper.ConfigurationProvider), req.PageSize, req.PageIndex);
             
         return new ApiActionResult(true) { Data = paginatedResult};
     }
