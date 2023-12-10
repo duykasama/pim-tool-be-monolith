@@ -94,20 +94,13 @@ public class ProjectsController : BaseController
     [HttpPost]
     public async Task<IActionResult> ImportProjectsFromFile([AcceptFileExtensions(".csv,.xlsx")] IFormFile file)
     {
-        return await _projectService.ImportProjectsFromFileNpoiAsync(file);
-
-        // return await ExecuteApiAsync(
-        //     async () => await _projectService.ImportProjectsFromFileNpoiAsync(file).ConfigureAwait(false)
-        // ).ConfigureAwait(false);
+        return await _projectService.ImportProjectsFromFileNpoiAsync(file).ConfigureAwait(false);
     }
     
     [Route("export-to-excel")]
     [HttpPost]
     public async Task<IActionResult> ExportProjectsToFile(ExportProjectsToFileRequest request)
     {
-        return await _projectService.ExportProjectsToFileAsync(request);
-        // return await ExecuteApiAsync(
-        //     async () => await _projectService.ExportProjectsToFileAsync().ConfigureAwait(false)
-        // ).ConfigureAwait(false);
+        return await _projectService.ExportProjectsToFileAsync(request).ConfigureAwait(false);
     }
 }

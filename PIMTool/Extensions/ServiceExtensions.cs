@@ -37,11 +37,11 @@ public static class ServiceExtensions
             options.AddPolicy(CoreConstants.APP_CORS, builder =>
             {
                 var config = services.BuildServiceProvider().GetService<IConfiguration>();
-                var allowedOrigins = config?.GetSection("AllowedOrigins").Value ?? "*"; 
-                builder.WithOrigins(allowedOrigins.Split(","))
+                var allowedOrigins = config?.GetSection(CoreConstants.ALLOWED_ORIGINS_SECTION).Value ?? CoreConstants.ANY_ORIGINS; 
+                builder.WithOrigins(allowedOrigins.Split(CoreConstants.ORIGINS_SEPARATOR))
                     .AllowAnyMethod()
                     .AllowAnyHeader();
-                if (allowedOrigins != "*")
+                if (allowedOrigins != CoreConstants.ANY_ORIGINS)
                 {
                     builder.AllowCredentials();
                 }

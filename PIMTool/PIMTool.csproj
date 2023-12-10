@@ -32,4 +32,8 @@
       <EmbeddedResource Include="Scripts\04.Update_Project_Indexes.sql" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Files\" />
+    </ItemGroup>
+
 </Project>
