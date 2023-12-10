@@ -74,6 +74,7 @@ public abstract class BaseTest
         LogHelper.InitLoggerService(new NLogService(Scope));
 
         var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
             .AddJsonFile("appsettings.Development.json")
             .Build();
         

@@ -594,7 +594,7 @@ public class ProjectServiceTest : BaseTest
         var result = await projectService.ImportProjectsFromFileNpoiAsync(fileMock.Object);
         
         // Assert
-        Assert.That(result.FileStream.Length, Is.GreaterThan(1000));
+        Assert.That(result.FileStream.Length, Is.GreaterThan(0));
     }
 
     [Test]

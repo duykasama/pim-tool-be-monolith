@@ -1,10 +1,8 @@
-﻿using System.Data;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Text;
 using Autofac;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using ExcelDataReader;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -349,7 +347,7 @@ public class ProjectService : BaseService, IProjectService
                 invalidColumns.Add(new ExcelColumnError(0, $"Project number ({projectNumber}) is invalid"));
             }
 
-            if (projectName is null || projectName.IsNullOrEmpty())
+            if (string.IsNullOrEmpty(projectName))
             {
                 isValidRow = false;
                 invalidColumns.Add(new ExcelColumnError(1, $"Project name ({projectName}) is invalid"));
@@ -447,11 +445,11 @@ public class ProjectService : BaseService, IProjectService
                 var project = new CreateProjectRequest()
                 {
                     ProjectNumber = projectNumber,
-                    Name = projectName,
-                    Customer = customer,
+                    Name = projectName!,
+                    Customer = customer!,
                     GroupId = groupId,
                     MemberIds = memberGuidIds,
-                    Status = status.ToUpper(),
+                    Status = status!.ToUpper(),
                     StartDate = startDate,
                     EndDate = endDate
                 };
@@ -488,20 +486,11 @@ public class ProjectService : BaseService, IProjectService
         }
             
         sheet.AutoSizeColumns();
-
-        var fileName = Guid.NewGuid() + ".xlsx";
+        
+        var fileName = $"{Guid.NewGuid()}.xlsx";
         await using var fs = File.Open(fileName, FileMode.Create);
         workbook.Write(fs);
-        await fs.DisposeAsync();
-
-        var tempStream = File.OpenRead(fileName);
-        tempStream.Position = 0;
-        var memoryStream = new MemoryStream();
-        await tempStream.CopyToAsync(memoryStream);
-        await tempStream.DisposeAsync();
-        File.Delete(fileName);
-        
-        return new FileStreamResult(memoryStream, "application/excel");
+        return new FileStreamResult(File.OpenRead(fileName), "application/excel");
     }
 
     public async Task<FileStreamResult> ExportProjectsToFileAsync(ExportProjectsToFileRequest request)

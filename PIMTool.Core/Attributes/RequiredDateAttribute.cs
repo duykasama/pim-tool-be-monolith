@@ -7,6 +7,6 @@ public class RequiredDateAttribute : ValidationAttribute
 {
     public override bool IsValid(object? value)
     {
-        return (DateTime)value != null && (DateTime)value != default;
+        return (DateTime)(value ?? default(DateTime)) != default;
     }
 }

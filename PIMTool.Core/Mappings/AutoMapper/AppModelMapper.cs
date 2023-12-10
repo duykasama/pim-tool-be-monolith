@@ -19,7 +19,7 @@ public static class AppModelMapper
     {
         #region Project mappings
 
-        config.CreateMap<Project, DtoProject>().ReverseMap();
+        config.CreateMap<Project, DtoProject>();
         config.CreateMap<Project, DtoProjectDetail>()
             .AfterMap((proj, detail) => detail.EndDate = proj.EndDate);
         config.CreateMap<CreateProjectRequest, Project>()

@@ -400,3 +400,4 @@ FodyWeavers.xsd
 .env
 .deployment
 **/appsettings.Production.json
+**/Files/*.xlsx
