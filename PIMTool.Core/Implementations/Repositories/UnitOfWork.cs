@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using PIMTool.Core.Interfaces.Repositories;
+﻿using PIMTool.Core.Interfaces.Repositories;
 using PIMTool.Core.Interfaces.Services;
 
 namespace PIMTool.Core.Implementations.Repositories;

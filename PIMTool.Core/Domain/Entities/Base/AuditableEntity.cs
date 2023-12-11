@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PIMTool.Core.Domain.Entities.Base;
+﻿namespace PIMTool.Core.Domain.Entities.Base;
 
 public abstract class AuditableEntity<TKey, TUserKey> : CreatableEntity<TKey, TUserKey>
 {

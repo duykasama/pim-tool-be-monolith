@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PIMTool.Core.Models.Dtos;
+﻿namespace PIMTool.Core.Models.Dtos;
 
 public class DtoProject
 {
@@ -10,6 +8,4 @@ public class DtoProject
     public string Status { get; set; }
     public string Customer { get; set; }
     public DateTime StartDate { get; set; }
-    // public int Version { get; set; }
-    // public Guid GroupId { get; set; }
 }

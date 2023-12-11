@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using PIMTool.Core.Models.Request.Base;
+﻿using PIMTool.Core.Models.Request.Base;
 
 namespace PIMTool.Core.Models.Request;
 

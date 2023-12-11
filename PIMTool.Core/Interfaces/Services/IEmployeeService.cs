@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using PIMTool.Core.Interfaces.Services.Base;
+﻿using PIMTool.Core.Interfaces.Services.Base;
 using PIMTool.Core.Models;
 using PIMTool.Core.Models.Request;
 

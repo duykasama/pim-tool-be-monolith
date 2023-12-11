@@ -1,5 +1,4 @@
-﻿using System;
-using PIMTool.Core.Exceptions.Base;
+﻿using PIMTool.Core.Exceptions.Base;
 
 namespace PIMTool.Core.Exceptions;
 

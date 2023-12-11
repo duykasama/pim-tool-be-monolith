@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PIMTool.Core.Models.Response;
+﻿namespace PIMTool.Core.Models.Response;
 
 public class TokenResponse
 {

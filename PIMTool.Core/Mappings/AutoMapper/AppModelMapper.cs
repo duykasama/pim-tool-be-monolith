@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using AutoMapper;
+﻿using AutoMapper;
 using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Helpers;
 using PIMTool.Core.Models;

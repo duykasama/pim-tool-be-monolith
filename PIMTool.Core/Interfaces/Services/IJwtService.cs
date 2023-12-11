@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using PIMTool.Core.Domain.Entities;
+﻿using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Models;
 
 namespace PIMTool.Core.Interfaces.Services;

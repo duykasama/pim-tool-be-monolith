@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using Autofac;
 using NLog;
 using PIMTool.Core.Implementations.Services.Base;

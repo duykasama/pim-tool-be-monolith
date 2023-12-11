@@ -1,6 +1,4 @@
-﻿using PIMTool.Core.Domain.Entities;
-
-namespace PIMTool.Core.Models.Dtos;
+﻿namespace PIMTool.Core.Models.Dtos;
 
 public class DtoEmployeeDetail
 {

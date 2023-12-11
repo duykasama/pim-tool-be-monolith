@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq.Expressions;
-using Microsoft.EntityFrameworkCore;
+﻿using System.Linq.Expressions;
 using PIMTool.Core.Domain.Entities;
 using PIMTool.Core.Interfaces.Repositories.Base;
 using PIMTool.Core.Models.Dtos;
