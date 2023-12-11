@@ -9,7 +9,7 @@ public class CreateProjectRequest
     [RequiredGuid]
     public Guid GroupId { get; set; }
     
-    [Range(typeof(int), "1", "2147483647")]
+    [Range(typeof(int), "1", "9999")]
     public int ProjectNumber { get; set; }
     
     [Required]

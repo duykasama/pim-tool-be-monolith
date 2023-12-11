@@ -27,38 +27,31 @@ public static class PaginationHelper
         pageIndex = pageIndex > lastPage ? lastPage : pageIndex;
         var isLastPage = pageIndex == lastPage;
 
+        var paginatedResult = new PaginatedResult()
+        {
+            PageIndex = pageIndex,
+            PageSize = pageSize,
+            LastPage = lastPage,
+            IsLastPage = isLastPage,
+            Total = total
+        };
+        
         if (pageIndex > lastPage / 2)
         {
             var mod = total % pageSize;
             var skip = Math.Max((lastPage - pageIndex - 1) * pageSize + mod, 0);
             var take = isLastPage ? mod : pageSize;
-        
             var reverse = source.Reverse();
-        
+            
             var res = reverse.Skip(skip).Take(take);
-            return Task.FromResult(new PaginatedResult()
-            {
-                PageIndex = pageIndex,
-                PageSize = pageSize,
-                Data = res.Reverse(),
-                LastPage = lastPage,
-                IsLastPage = isLastPage,
-                Total = total
-            });
+            paginatedResult.Data = res.Reverse();
+            Task.FromResult(paginatedResult);
         }
         
         var results = source.Skip((pageIndex - 1) * pageSize)
             .Take(pageSize);
-
-        return Task.FromResult(new PaginatedResult()
-        {
-            PageIndex = pageIndex,
-            PageSize = pageSize,
-            Data = results,
-            LastPage = lastPage,
-            IsLastPage = isLastPage,
-            Total = total
-        });
+        paginatedResult.Data = results;
+        return Task.FromResult(paginatedResult);
     }
     
     public static async Task<PaginatedResult> BuildPaginatedResult<T>(IQueryable<T> source, int pageSize, int pageIndex)
