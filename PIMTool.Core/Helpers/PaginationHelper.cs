@@ -45,7 +45,7 @@ public static class PaginationHelper
             
             var res = reverse.Skip(skip).Take(take);
             paginatedResult.Data = res.Reverse();
-            Task.FromResult(paginatedResult);
+            return Task.FromResult(paginatedResult);
         }
         
         var results = source.Skip((pageIndex - 1) * pageSize)

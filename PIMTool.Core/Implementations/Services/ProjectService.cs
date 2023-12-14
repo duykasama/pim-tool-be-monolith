@@ -219,7 +219,6 @@ public class ProjectService : BaseService, IProjectService
             .Include(p => p.Employees)
             .FirstOrDefaultAsync();
 
-        // var project = await _projectRepository.GetAsync(p => !p.IsDeleted && p.Id == id);
         if (project is null)
         {
             throw new ProjectDoesNotExistException();
